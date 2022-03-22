@@ -20,9 +20,22 @@ namespace Osprey
 
         internal Node(string id, string name, string environment)
         {
-            var port = OSPREY.Network.Config.Network.UdpBroadcastPort;
-            var local = Address.GetLocalIpAddress();
-            var remote = IPAddress.Parse(OSPREY.Network.Config.Network.UdpBroadcastRemote);
+            var config = OSPREY.Network.Config.Network;
+            var port = config.UdpBroadcastPort;
+            
+            IPAddress local;
+            if (string.IsNullOrEmpty(config.UdpBroadcastLocal))
+            {
+                local = Address.GetLocalIpAddress();
+                OSPREY.Network.Logger.Debug("Using automatic local address: " + local);
+            }
+            else
+            {
+                local = config.UdpBroadcastLocal.ParseIPAddress();
+                OSPREY.Network.Logger.Debug("Using local address from config: " + local);
+            }
+
+            var remote = IPAddress.Parse(config.UdpBroadcastRemote);
 
             Info = new NodeInfo
             {

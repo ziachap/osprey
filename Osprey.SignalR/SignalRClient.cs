@@ -54,6 +54,8 @@ namespace Osprey.SignalR
 
         private HubConnection _connection;
         private bool _disposed;
+
+        public string Environment { get; set; } = null;
         
         public event Func<Exception, Task> Disconnected;
         public event Func<string, Task> Connected;
@@ -82,7 +84,7 @@ namespace Osprey.SignalR
                     }
 
                     var url = OSPREY.Network
-                        .Locate(_node, environment: null, true)
+                        .Locate(_node, Environment, true)
                         .FindService(_service, true)
                         .Address;
 

@@ -45,7 +45,7 @@ namespace Osprey
             }
             catch (FileNotFoundException ex)
             {
-                Logger.Warn("No osprey configuration file found.");
+                Logger.Warn($"No osprey configuration file found. ({filepath})");
             }
         }
         
@@ -57,16 +57,19 @@ namespace Osprey
             var p = new FluentCommandLineParser();
 
             //TODO: Complete these arguments
+            p.Setup<string>('l', "o-udp-local")
+                .WithDescription("")
+                .Callback(value => Config.Network.UdpBroadcastLocal = value);
 
-            p.Setup<string>('r', "udp-remote")
+            p.Setup<string>('r', "o-udp-remote")
                 .WithDescription("")
                 .Callback(value => Config.Network.UdpBroadcastRemote = value);
 
-            p.Setup<int>('p', "udp-remote-port")
+            p.Setup<int>('p', "o-udp-remote-port")
                 .WithDescription("")
                 .Callback(value => Config.Network.UdpBroadcastPort = value);
 
-            p.Setup<bool>('d', "use-dns-address")
+            p.Setup<bool>('d', "o-use-dns-address")
                 .WithDescription("")
                 .Callback(value => Config.Network.UseDnsAddress = value);
 
@@ -87,7 +90,12 @@ namespace Osprey
             var osprey = new OSPREY();
             _instance = osprey;
 
-            osprey.LoadJsonConfiguration("osprey.json");
+            var filePath = "osprey.json";
+            new FluentCommandLineParser()
+                .Setup<string>("o-config")
+                .Callback(value => filePath = value);
+
+            osprey.LoadJsonConfiguration(filePath);
             osprey.LoadCommandLineArguments(Environment.GetCommandLineArgs());
             
 			var id = Guid.NewGuid().ToString();

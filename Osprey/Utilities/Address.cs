@@ -12,6 +12,11 @@ namespace Osprey.Utilities
     /// </summary>
     public static class Address
     {
+        public static IPAddress ParseIPAddress(this string endpoint)
+        {
+            return IPAddress.Parse(endpoint);
+        }
+
         public static IPEndPoint GenerateUdpEndpoint()
         {
             return new IPEndPoint(GetLocalIpAddress(), GetUdpPort());
