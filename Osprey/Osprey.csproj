@@ -13,8 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="osprey.json">
+    <Content Include="osprey.json" Pack="True">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
     </Content>
   </ItemGroup>
 

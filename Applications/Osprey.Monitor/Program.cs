@@ -11,7 +11,7 @@ namespace Osprey.Monitor
     {
         static void Main(string[] args)
         {
-            using (OSPREY.Join("osprey.monitor", "acceptance"))
+            using (OSPREY.Join("osprey.monitor", "production"))
             {
                 while (true)
                 {
@@ -27,24 +27,32 @@ namespace Osprey.Monitor
 
         private static void PrintDiscovered()
         {
-            var active = OSPREY.Network.Node.Receiver.Active.ToList();
+            var active = OSPREY.Network.Node.Receiver.Active
+                .GroupBy(x => x.Environment)
+                .OrderBy(x => x.Key)
+                .ToList();
             Console.WriteLine($"-- Active [{active.Count}] --");
-            foreach (var node in active)
+            foreach (var group in active)
             {
-                Console.WriteLine($"{node.Id} | {node.Name} | {node.Ip}");
-                foreach (var service in node.Services)
+                Console.WriteLine($"{group.Key}");
+                foreach (var node in group)
                 {
-                    switch (service.Type)
+                    Console.WriteLine($"  {node.Id} | {node.Name} | {node.Ip}");
+                    foreach (var service in node.Services)
                     {
-                        case "http":
-                            Console.WriteLine($"    HTTP [{service.Name}] ({service.Address})");
-                            break;
-                        case "zmq":
-                            Console.WriteLine($"    ZMQ [{service.Name}] ({service.Address})");
-                            break;
+                        switch (service.Type)
+                        {
+                            case "http":
+                                Console.WriteLine($"    HTTP [{service.Name}] ({service.Address})");
+                                break;
+                            case "zmq":
+                                Console.WriteLine($"    ZMQ [{service.Name}] ({service.Address})");
+                                break;
+                        }
                     }
                 }
             }
+            
         }
     }
 }

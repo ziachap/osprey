@@ -7,8 +7,6 @@ namespace Osprey.Configuration
     public class OspreyConfiguration
     {
         public NetworkConfiguration Network { get; set; } = new NetworkConfiguration();
-
-        public string SomethingElse { get; set; } = "Hello world";
     }
 
     public class NetworkConfiguration
@@ -16,6 +14,8 @@ namespace Osprey.Configuration
         public bool Broadcast { get; set; } = true;
 
         public bool Discover { get; set; } = true;
+
+        public string UdpBroadcastLocal { get; set; }
 
         public string UdpBroadcastRemote { get; set; } = "255.255.255.255";
 
