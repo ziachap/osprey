@@ -77,6 +77,7 @@ namespace Osprey
             if (Info.Services.Any(x => x.Name == service.Name))
                 throw new Exception("Already registered: " + service.Name);
             Info.Services.Add(service);
+            OSPREY.Network.Logger.Info($"Registered new service: [{service.Type}] {service.Name} | {service.Address}");
         }
 
         public void Dispose()
