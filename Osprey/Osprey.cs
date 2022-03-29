@@ -122,13 +122,27 @@ namespace Osprey
         }
 
         /// <summary>
-        /// Locate all instances of a service on the network.
+        /// Locate all instances of a node on the network.
         /// </summary>
         public IEnumerable<NodeInfo> LocateAll(string node, string environment = null)
         {
+            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
+
             environment ??= Node.Info.Environment;
 
             return Node.Receiver.LocateAll(node, environment);
+        }
+
+        /// <summary>
+        /// Locate all nodes on the network.
+        /// </summary>
+        public IEnumerable<NodeInfo> LocateAll(string environment = null)
+        {
+            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
+
+            environment ??= Node.Info.Environment;
+
+            return Node.Receiver.LocateAll(environment);
         }
 
         /// <summary>
@@ -136,6 +150,8 @@ namespace Osprey
         /// </summary>
         public void Register(string type, string name, string address)
         {
+            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
+
             var service = new ServiceInfo()
             {
                 Type = type,
