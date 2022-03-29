@@ -71,6 +71,11 @@ namespace Osprey.ServiceDiscovery
             return Active.Where(x => x.Name == service && x.Environment == environment);
         }
 
+        public IEnumerable<NodeInfo> LocateAll(string environment)
+        {
+            return Active.Where(x => x.Environment == environment);
+        }
+
         private class NodeInfoEntry
         {
             public NodeInfoEntry(NodeInfo node)
