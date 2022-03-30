@@ -12,18 +12,21 @@ namespace Osprey.ServiceDiscovery
         private readonly UdpChannel _client;
         private readonly ConcurrentDictionary<string, NodeInfoEntry> _discovered;
 
-        public IEnumerable<NodeInfo> Active => _discovered.Values.Where(x => x.Active).Select(x => x.Node);
+        public IEnumerable<NodeInfo> Active => _discovered.Values
+            .Where(x => x.Active)
+            .Select(x => x.Node)
+            .ToList();
 
         public event Action<NodeInfo> OnDiscover;
         public event Action<NodeInfo> OnLost;
 
-        public Receiver(UdpChannel client)
+        internal Receiver(UdpChannel client)
         {
             _client = client;
             _discovered = new ConcurrentDictionary<string, NodeInfoEntry>();
         }
 
-        public void Start()
+        internal void Start()
         {
             Task.Factory.StartNew(() =>
             {
@@ -57,7 +60,7 @@ namespace Osprey.ServiceDiscovery
             }, TaskCreationOptions.LongRunning);
         }
 
-        public NodeInfo Locate(string service, string environment, bool throwError = false)
+        internal NodeInfo Locate(string service, string environment, bool throwError = false)
         {
             return Active
                        .Where(x => x.Name == service && x.Environment == environment)
@@ -66,12 +69,12 @@ namespace Osprey.ServiceDiscovery
                    ?? (throwError ? throw new ServiceUnavailableException("Service not found") : (NodeInfo)null);
         }
 
-        public IEnumerable<NodeInfo> LocateAll(string service, string environment)
+        internal IEnumerable<NodeInfo> LocateAll(string service, string environment)
         {
             return Active.Where(x => x.Name == service && x.Environment == environment);
         }
 
-        public IEnumerable<NodeInfo> LocateAll(string environment)
+        internal IEnumerable<NodeInfo> LocateAll(string environment)
         {
             return Active.Where(x => x.Environment == environment);
         }
@@ -94,19 +97,6 @@ namespace Osprey.ServiceDiscovery
             {
                 Discovered = DateTime.UtcNow;
             }
-        }
-    }
-
-    public class ServiceUnavailableException : Exception
-    {
-        public ServiceUnavailableException()
-        {
-            
-        }
-
-        public ServiceUnavailableException(string message) : base(message)
-        {
-            
         }
     }
 }

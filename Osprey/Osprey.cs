@@ -110,8 +110,9 @@ namespace Osprey
         }
 
         /// <summary>
-        /// Attempt to locate a service on the network.
+        /// Attempt to locate a node on the network.
         /// </summary>
+        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
         public NodeInfo Locate(string node, string environment = null, bool throwError = false)
         {
             if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
@@ -124,25 +125,36 @@ namespace Osprey
         /// <summary>
         /// Locate all instances of a node on the network.
         /// </summary>
-        public IEnumerable<NodeInfo> LocateAll(string node, string environment = null)
+        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
+        public IEnumerable<NodeInfo> LocateNodes(string node, string environment = null)
         {
             if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-
+             
             environment ??= Node.Info.Environment;
 
             return Node.Receiver.LocateAll(node, environment);
         }
 
         /// <summary>
-        /// Locate all nodes on the network.
+        /// Locate all nodes on the network for a particular environment.
         /// </summary>
-        public IEnumerable<NodeInfo> LocateAll(string environment = null)
+        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
+        public IEnumerable<NodeInfo> LocateEnvironment(string environment = null)
         {
             if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
 
             environment ??= Node.Info.Environment;
 
             return Node.Receiver.LocateAll(environment);
+        }
+
+        /// <summary>
+        /// Return all nodes across all environments on the network.
+        /// </summary>
+        public IEnumerable<NodeInfo> LocateAll()
+        {
+            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
+            return Node.Receiver.Active;
         }
 
         /// <summary>

@@ -7,14 +7,13 @@ using Osprey.ServiceDiscovery;
 using Osprey.Utilities;
 
 [assembly: InternalsVisibleTo("Osprey.Monitor")]
-
 namespace Osprey
 {
     public class Node : IDisposable
     {
         public NodeInfo Info { get; private set; }
-        internal Receiver Receiver { get; private set; }
-        internal Broadcaster Broadcaster { get; private set; }
+        public Receiver Receiver { get; private set; }
+        public Broadcaster Broadcaster { get; private set; }
 
         private readonly UdpChannel _broadcastChannel;
 
@@ -26,7 +25,7 @@ namespace Osprey
             IPAddress local;
             if (string.IsNullOrEmpty(config.UdpBroadcastLocal))
             {
-                local = Address.GetLocalIpAddress();
+                local = Address.GetLocalUdpBroadcastAddress();
                 OSPREY.Network.Logger.Debug("Using automatic local address: " + local);
             }
             else
@@ -59,7 +58,7 @@ namespace Osprey
             }
             if (config.Broadcast)
             {
-                Broadcaster = new Broadcaster(_broadcastChannel, Info);
+                Broadcaster = new Broadcaster(_broadcastChannel, Info, config.BroadcastInterval);
                 Broadcaster.Start();
             }
 

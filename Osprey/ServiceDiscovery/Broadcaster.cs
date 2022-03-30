@@ -9,24 +9,31 @@ namespace Osprey.ServiceDiscovery
 	{
 		private readonly UdpChannel _channel;
 		private readonly NodeInfo _info;
+        private readonly int _interval;
 
-		public Broadcaster(UdpChannel channel, NodeInfo info)
+        internal Broadcaster(UdpChannel channel, NodeInfo info, int broadcastInterval)
 		{
 			_channel = channel;
 			_info = info;
-		}
+            _interval = broadcastInterval;
+        }
 
-		public void Start()
+		internal void Start()
 		{
 			Task.Factory.StartNew(() =>
 			{
 				while (true)
 				{
-                    var serialized = OSPREY.Network.Serializer.Serialize(_info);
-					_channel.Send(serialized);
-					Thread.Sleep(1000);
+                    Send(_info);
+					Thread.Sleep(_interval);
 				}
 			}, TaskCreationOptions.LongRunning);
 		}
-    }
+
+        public void Send(NodeInfo node)
+		{
+			var serialized = OSPREY.Network.Serializer.Serialize(node);
+            _channel.Send(serialized);
+		}
+	}
 }
