@@ -44,10 +44,36 @@ namespace Osprey.Utilities
             return p;
         }
 
-        public static IPAddress GetLocalIpAddress()
+        /// <summary>
+        /// Get an IP address to be used as a local address for service discovery on an Osprey network.
+        /// </summary>
+        public static IPAddress GetLocalUdpBroadcastAddress()
         {
             var config = OSPREY.Network.Config;
-            
+
+            var addresses = GetLocalAddressesIPV4();
+
+            var ipFilter = config.Network.UdpBroadcastLocalFilter;
+
+            if (!string.IsNullOrEmpty(ipFilter))
+            {
+                OSPREY.Network.Logger.Debug($"Using preferred local IP filter: {ipFilter}*");
+            }
+
+            var ordered = addresses.OrderByDescending(ip => ip.ToString().StartsWith(ipFilter ?? ""));
+
+            return ordered.First();
+        }
+
+        public static IPAddress GetLocalIpAddress()
+        {
+            return GetLocalAddressesIPV4().First();
+        }
+
+        private static IEnumerable<IPAddress> GetLocalAddressesIPV4()
+        {
+            var config = OSPREY.Network.Config;
+
             if (config.Network.UseDnsAddress)
             {
                 OSPREY.Network.Logger.Debug("Resolving local IP from DNS.");
@@ -58,27 +84,24 @@ namespace Osprey.Utilities
                 OSPREY.Network.Logger.Debug("DNS host name: " + hostName);
                 OSPREY.Network.Logger.Debug("DNS hosts: " + string.Join(", ", host.AddressList.Select(x => (object)x)));
 
-                foreach (var ip in host.AddressList)
-                {
-                    // ignore localhost
-                    if (ip.ToString().StartsWith("127")) continue;
+                var filtered = host.AddressList
+                    .Where(x => !x.ToString().StartsWith("127"))
+                    .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                    .ToList();
 
-                    // IPv4 only
-                    if (ip.AddressFamily == AddressFamily.InterNetwork)
-                    {
-                        return ip;
-                    }
-                }
+                if (!filtered.Any()) throw new Exception("No network adapters with an IPv4 address in the system!");
 
-                throw new Exception("No network adapters with an IPv4 address in the system!");
+                return filtered;
             }
 
             OSPREY.Network.Logger.Debug("Resolving local IP from a transient socket.");
 
-            var addr = LocalAddressFromSocket();
-            OSPREY.Network.Logger.Debug("Socket address: " + addr);
+            var transientAddress = LocalAddressFromSocket();
+            OSPREY.Network.Logger.Debug("Socket address: " + transientAddress);
 
-            return addr ?? throw new Exception("Unable to resolve address from a transient socket.");
+            if (transientAddress == null) throw new Exception("Unable to resolve address from a transient socket.");
+
+            return new []{ transientAddress };
         }
         
         private static IPAddress LocalAddressFromSocket()

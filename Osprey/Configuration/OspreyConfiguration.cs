@@ -15,6 +15,8 @@ namespace Osprey.Configuration
 
         public bool Discover { get; set; } = true;
 
+        public string UdpBroadcastLocalFilter { get; set; }
+
         public string UdpBroadcastLocal { get; set; }
 
         public string UdpBroadcastRemote { get; set; } = "255.255.255.255";

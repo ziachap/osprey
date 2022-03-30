@@ -176,7 +176,7 @@ namespace Osprey.ZeroMQ
 
             if (relay)
             {
-                var others = OSPREY.Network.LocateAll(_node).Where(x => x.Id != OSPREY.Network.Node.Info.Id).ToList();
+                var others = OSPREY.Network.LocateEnvironment(_node).Where(x => x.Id != OSPREY.Network.Node.Info.Id).ToList();
 
                 if (!others.Any()) return;
 
