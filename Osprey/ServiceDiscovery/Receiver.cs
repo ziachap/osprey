@@ -52,7 +52,7 @@ namespace Osprey.ServiceDiscovery
                     }
                     catch (Exception ex)
                     {
-                        OSPREY.Network.Logger.Warn("Failed to receive UDP multicast");
+                        OSPREY.Network.Logger.Warn("Failed to receive UDP multicast.");
                         OSPREY.Network.Logger.Error(ex.ToString());
                     }
 
@@ -85,7 +85,7 @@ namespace Osprey.ServiceDiscovery
             {
                 Node = node;
                 Discovered = DateTime.UtcNow;
-                Timeout = OSPREY.Network.Config.Network.DiscoveryTimeout;
+                Timeout = OSPREY.Network.Config.DiscoveryTimeout;
             }
 
             private DateTime Discovered { get; set; }

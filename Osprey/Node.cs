@@ -19,7 +19,7 @@ namespace Osprey
 
         internal Node(string id, string name, string environment)
         {
-            var config = OSPREY.Network.Config.Network;
+            var config = OSPREY.Network.Config;
             var port = config.UdpBroadcastPort;
             
             IPAddress local;
@@ -49,7 +49,7 @@ namespace Osprey
 
         internal void Start()
         {
-            var config = OSPREY.Network.Config.Network;
+            var config = OSPREY.Network.Config;
 
             if (config.Discover)
             {
@@ -58,7 +58,7 @@ namespace Osprey
             }
             if (config.Broadcast)
             {
-                Broadcaster = new Broadcaster(_broadcastChannel, Info, config.BroadcastInterval);
+                Broadcaster = new Broadcaster(_broadcastChannel, Info);
                 Broadcaster.Start();
             }
 

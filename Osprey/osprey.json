@@ -1,12 +1,10 @@
 {
-  "Network": {
-    "Broadcast": true,
-    "Discover": true,
-    "UdpBroadcastLocalFilter": "192.168.217",
-    "UdpBroadcastRemote": "255.255.255.255",
-    "UdpBroadcastRemotePort": 55555,
-    "BroadcastInterval": 1000,
-    "DiscoveryTimeout": 3000,
-    "UseDnsAddress": true
-  }
+  "Broadcast": true,
+  "Discover": true,
+  "UdpBroadcastLocalFilter": "192.168.217",
+  "UdpBroadcastRemote": "255.255.255.255",
+  "UdpBroadcastRemotePort": 55555,
+  "BroadcastInterval": 1000,
+  "DiscoveryTimeout": 3000,
+  "UseDnsAddress": true
 }

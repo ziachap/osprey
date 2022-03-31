@@ -9,13 +9,11 @@ namespace Osprey.ServiceDiscovery
 	{
 		private readonly UdpChannel _channel;
 		private readonly NodeInfo _info;
-        private readonly int _interval;
 
-        internal Broadcaster(UdpChannel channel, NodeInfo info, int broadcastInterval)
+        internal Broadcaster(UdpChannel channel, NodeInfo info)
 		{
 			_channel = channel;
 			_info = info;
-            _interval = broadcastInterval;
         }
 
 		internal void Start()
@@ -25,7 +23,7 @@ namespace Osprey.ServiceDiscovery
 				while (true)
 				{
                     Send(_info);
-					Thread.Sleep(_interval);
+					Thread.Sleep(OSPREY.Network.Config.BroadcastInterval);
 				}
 			}, TaskCreationOptions.LongRunning);
 		}

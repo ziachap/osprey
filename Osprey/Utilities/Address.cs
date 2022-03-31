@@ -53,7 +53,7 @@ namespace Osprey.Utilities
 
             var addresses = GetLocalAddressesIPV4();
 
-            var ipFilter = config.Network.UdpBroadcastLocalFilter;
+            var ipFilter = config.UdpBroadcastLocalFilter;
 
             if (!string.IsNullOrEmpty(ipFilter))
             {
@@ -74,7 +74,7 @@ namespace Osprey.Utilities
         {
             var config = OSPREY.Network.Config;
 
-            if (config.Network.UseDnsAddress)
+            if (config.UseDnsAddress)
             {
                 OSPREY.Network.Logger.Debug("Resolving local IP from DNS.");
 

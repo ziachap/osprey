@@ -6,11 +6,6 @@ namespace Osprey.Configuration
 {
     public class OspreyConfiguration
     {
-        public NetworkConfiguration Network { get; set; } = new NetworkConfiguration();
-    }
-
-    public class NetworkConfiguration
-    {
         public bool Broadcast { get; set; } = true;
 
         public bool Discover { get; set; } = true;
