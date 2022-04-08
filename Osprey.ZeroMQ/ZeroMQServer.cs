@@ -31,7 +31,7 @@ namespace Osprey.ZeroMQ
 
         public ZeroMQServer(string serviceName)
         {
-            _node = OSPREY.Network.Node.Info.Name;
+            _node = Osprey.Network.Node.Info.Name;
             _service = serviceName;
             _endpoint = Address.GenerateTcpEndpoint();
             _relayEndpoint = Address.GenerateUdpEndpoint();
@@ -48,16 +48,16 @@ namespace Osprey.ZeroMQ
             //_relaySocket = new RadioSocket();
             //_relaySocket.Connect("udp://" + _relayEndpoint);
 
-            OSPREY.Network.Logger.Debug("Created ZeroMQ server on " + _endpoint);
+            Osprey.Network.Logger.Debug("Created ZeroMQ server on " + _endpoint);
 
-            OSPREY.Network.Node.Register(hostInfo);
+            Osprey.Network.Node.Register(hostInfo);
         }
 
         private void StartRelayThread()
         {
             Task.Run(() =>
             {
-                OSPREY.Network.Logger.Debug("Starting relay thread.");
+                Osprey.Network.Logger.Debug("Starting relay thread.");
                 using (var server = new DishSocket())
                 {
                     server.Bind("udp://" + _relayEndpoint);
@@ -67,12 +67,12 @@ namespace Osprey.ZeroMQ
                         try
                         {
                             var msg = server.ReceiveString();
-                            OSPREY.Network.Logger.Debug("Received relay");
+                            Osprey.Network.Logger.Debug("Received relay");
                             Thread.Sleep(1000);
                         }
                         catch (Exception ex)
                         {
-                            OSPREY.Network.Logger.Error(ex.ToString());
+                            Osprey.Network.Logger.Error(ex.ToString());
                         }
                     }
                 }
@@ -91,11 +91,11 @@ namespace Osprey.ZeroMQ
                         try
                         {
                             var raw = server.ReceiveFrameString();
-                            var message = OSPREY.Network.Serializer.Deserialize<EstablishRequest>(raw);
+                            var message = Osprey.Network.Serializer.Deserialize<EstablishRequest>(raw);
 
                             if (string.IsNullOrEmpty(message.ClientId))
                             {
-                                OSPREY.Network.Logger.Info("Received relay: " + raw);
+                                Osprey.Network.Logger.Info("Received relay: " + raw);
 
                                 Publish(message.Topic, message.Message, false);
 
@@ -103,7 +103,7 @@ namespace Osprey.ZeroMQ
                                 continue;
                             }
 
-                            OSPREY.Network.Logger.Debug("Received " + raw);
+                            Osprey.Network.Logger.Debug("Received " + raw);
 
                             // Add the new client or replace it
                             var client = _clients.AddOrUpdate(message.ClientId, id => new Client(), (id, client) =>
@@ -115,7 +115,7 @@ namespace Osprey.ZeroMQ
                             // Remove the client when it has disconnected
                             client.OnDisconnected += () =>
                             {
-                                OSPREY.Network.Logger.Debug("Lost connection to client: " + message.ClientId);
+                                Osprey.Network.Logger.Debug("Lost connection to client: " + message.ClientId);
                                 _clients.TryRemove(message.ClientId, out _);
                             };
 
@@ -130,10 +130,10 @@ namespace Osprey.ZeroMQ
                                 OnSubscribe?.Invoke(topic);
                             };
 
-                            OSPREY.Network.Logger.Debug("Registered client: " + message.ClientId);
+                            Osprey.Network.Logger.Debug("Registered client: " + message.ClientId);
 
                             // Send back a successful response to the client
-                            var response = OSPREY.Network.Serializer.Serialize(new EstablishResponse
+                            var response = Osprey.Network.Serializer.Serialize(new EstablishResponse
                             {
                                 ClientId = message.ClientId,
                                 StreamEndpoint = client.StreamEndpoint.ToString(),
@@ -149,7 +149,7 @@ namespace Osprey.ZeroMQ
                         }
                         catch (Exception ex)
                         {
-                            OSPREY.Network.Logger.Error(ex.ToString());
+                            Osprey.Network.Logger.Error(ex.ToString());
                             Thread.Sleep(10);
                         }
                     }
@@ -165,7 +165,7 @@ namespace Osprey.ZeroMQ
         /// <param name="relay"></param>
         public void Publish(string topic, object data, bool relay = true)
         {
-            var msg = OSPREY.Network.Serializer.Serialize(data);
+            var msg = Osprey.Network.Serializer.Serialize(data);
 
             _lastValueCache[topic] = msg;
 
@@ -176,7 +176,7 @@ namespace Osprey.ZeroMQ
 
             if (relay)
             {
-                var others = OSPREY.Network.LocateEnvironment(_node).Where(x => x.Id != OSPREY.Network.Node.Info.Id).ToList();
+                var others = Osprey.Network.LocateEnvironment(_node).Where(x => x.Id != Osprey.Network.Node.Info.Id).ToList();
 
                 if (!others.Any()) return;
 
@@ -186,7 +186,7 @@ namespace Osprey.ZeroMQ
                     Message = msg
                 };
 
-                var json = OSPREY.Network.Serializer.Serialize(relayMsg);
+                var json = Osprey.Network.Serializer.Serialize(relayMsg);
 
                 foreach (var other in others)
                 {
@@ -258,13 +258,13 @@ namespace Osprey.ZeroMQ
                 {
                     if (!HeartbeatSocket.TrySendFrame(TimeSpan.FromMilliseconds(HeartbeatTimeoutMs), "ping"))
                     {
-                        OSPREY.Network.Logger.Warn("Sending heartbeat failed.");
+                        Osprey.Network.Logger.Warn("Sending heartbeat failed.");
                         OnDisconnected?.Invoke();
                         return;
                     }
                     if (!HeartbeatSocket.TryReceiveFrameString(TimeSpan.FromMilliseconds(HeartbeatTimeoutMs), out var response))
                     {
-                        OSPREY.Network.Logger.Warn("Receiving heartbeat response failed.");
+                        Osprey.Network.Logger.Warn("Receiving heartbeat response failed.");
                         OnDisconnected?.Invoke();
                         return;
                     }
@@ -272,7 +272,7 @@ namespace Osprey.ZeroMQ
                 }
             }).ContinueWith(task =>
             {
-                OSPREY.Network.Logger.Warn("¬ Heartbeat sending thread has ended.");
+                Osprey.Network.Logger.Warn("¬ Heartbeat sending thread has ended.");
             });
         }
 
@@ -280,7 +280,7 @@ namespace Osprey.ZeroMQ
         {
             Task.Run(() =>
             {
-                OSPREY.Network.Logger.Debug("Started request/response thread.");
+                Osprey.Network.Logger.Debug("Started request/response thread.");
                 while (!_closed)
                 {
                     var command = ResponseSocket.ReceiveFrameString();
@@ -299,7 +299,7 @@ namespace Osprey.ZeroMQ
                             // TODO
                             if (!ResponseSocket.TrySendFrame(TimeSpan.FromMilliseconds(HeartbeatTimeoutMs), ex.Message))
                             {
-                                OSPREY.Network.Logger.Warn("Sending error response failed.");
+                                Osprey.Network.Logger.Warn("Sending error response failed.");
                                 OnDisconnected?.Invoke();
                             }
                             return;
@@ -312,14 +312,14 @@ namespace Osprey.ZeroMQ
                     
                     if (!ResponseSocket.TrySendFrame(TimeSpan.FromMilliseconds(HeartbeatTimeoutMs), "OK"))
                     {
-                        OSPREY.Network.Logger.Warn("Sending response failed.");
+                        Osprey.Network.Logger.Warn("Sending response failed.");
                         OnDisconnected?.Invoke();
                         return;
                     }
                 }
             }).ContinueWith(task =>
             {
-                OSPREY.Network.Logger.Warn("¬ Request/response thread has ended.");
+                Osprey.Network.Logger.Warn("¬ Request/response thread has ended.");
             });
         }
 

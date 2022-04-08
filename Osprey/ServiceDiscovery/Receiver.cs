@@ -4,12 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Osprey.Communication;
+using Osprey.Logging;
+using Osprey.Serialization;
 
 namespace Osprey.ServiceDiscovery
 {
     public class Receiver
     {
         private readonly UdpChannel _client;
+        private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, NodeInfoEntry> _discovered;
 
         public IEnumerable<NodeInfo> Active => _discovered.Values
@@ -18,11 +21,12 @@ namespace Osprey.ServiceDiscovery
             .ToList();
 
         public event Action<NodeInfo> OnDiscover;
-        public event Action<NodeInfo> OnLost;
+        //public event Action<NodeInfo> OnLost; // TODO
 
-        internal Receiver(UdpChannel client)
+        internal Receiver(UdpChannel client, ISerializer serializer)
         {
             _client = client;
+            _serializer = serializer;
             _discovered = new ConcurrentDictionary<string, NodeInfoEntry>();
         }
 
@@ -39,8 +43,8 @@ namespace Osprey.ServiceDiscovery
 
                         _discovered.AddOrUpdate(message, msg =>
                         {
-                            var nodeInfo = OSPREY.Network.Serializer.Deserialize<NodeInfo>(message);
-                            var nodeInfoEntry = new NodeInfoEntry(nodeInfo);
+                            var nodeInfo = _serializer.Deserialize<NodeInfo>(message);
+                            var nodeInfoEntry = new NodeInfoEntry(nodeInfo, Configuration.Configuration.Global.DiscoveryTimeout);
                             OnDiscover?.Invoke(nodeInfo);
                             return nodeInfoEntry;
                         }, (msg, node) =>
@@ -52,8 +56,8 @@ namespace Osprey.ServiceDiscovery
                     }
                     catch (Exception ex)
                     {
-                        OSPREY.Network.Logger.Warn("Failed to receive UDP multicast.");
-                        OSPREY.Network.Logger.Error(ex.ToString());
+                        OspreyLog.Warn("Failed to receive UDP multicast.");
+                        OspreyLog.Error(ex.ToString());
                     }
 
                 }
@@ -81,11 +85,11 @@ namespace Osprey.ServiceDiscovery
 
         private class NodeInfoEntry
         {
-            public NodeInfoEntry(NodeInfo node)
+            public NodeInfoEntry(NodeInfo node, int timeout)
             {
                 Node = node;
                 Discovered = DateTime.UtcNow;
-                Timeout = OSPREY.Network.Config.DiscoveryTimeout;
+                Timeout = timeout;
             }
 
             private DateTime Discovered { get; set; }

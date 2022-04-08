@@ -4,7 +4,7 @@
     {
         public string Endpoint { get; set; }
         public HttpVerb RequestType { get; set; }
-        public NodeInfo Sender => OSPREY.Network.Node.Info;
+        public NodeInfo Sender { get; set; }
         public T Payload { get; set; }
     }
 

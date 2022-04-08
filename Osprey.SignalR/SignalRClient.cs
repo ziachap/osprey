@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Osprey.Logging;
 using Osprey.ServiceDiscovery;
 using Osprey.Utilities;
 using Exception = System.Exception;
@@ -45,6 +46,7 @@ namespace Osprey.SignalR
     
     public class OspreySignalRClient : IOspreySignalRClient
     {
+        private readonly IOsprey _network;
         private readonly string _node;
         private readonly string _service;
         private readonly string _hubEndpointUrl;
@@ -60,8 +62,9 @@ namespace Osprey.SignalR
         public event Func<Exception, Task> Disconnected;
         public event Func<string, Task> Connected;
         
-        public OspreySignalRClient(string node, string service, string hubEndpointUrl, int retryMilliseconds = 3000, Action<IHubConnectionBuilder> builder = null)
+        public OspreySignalRClient(IOsprey osprey, string node, string service, string hubEndpointUrl, int retryMilliseconds = 3000, Action<IHubConnectionBuilder> builder = null)
         {
+            _network = osprey;
             _node = node;
             _service = service;
             _hubEndpointUrl = hubEndpointUrl;
@@ -83,7 +86,7 @@ namespace Osprey.SignalR
                         _connection = null;
                     }
 
-                    var url = OSPREY.Network
+                    var url = _network
                         .Locate(_node, Environment, true)
                         .FindService(_service, true)
                         .Address;
@@ -113,12 +116,12 @@ namespace Osprey.SignalR
                 }
                 catch (ServiceUnavailableException ex)
                 {
-                    OSPREY.Network.Logger.Warn(ex.ToString());
+                    OspreyLog.Warn(ex.ToString());
                     await Task.Delay(_retryMilliseconds);
                 }
                 catch (Exception ex)
                 {
-                    OSPREY.Network.Logger.Warn(ex.ToString());
+                    OspreyLog.Warn(ex.ToString());
                     await Task.Delay(_retryMilliseconds);
                 }
             }

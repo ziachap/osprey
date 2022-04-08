@@ -1,6 +1,4 @@
 {
-  "Broadcast": false,
-  "Discover": true,
   "UdpBroadcastLocalFilter": "192.168.217",
   "UdpBroadcastRemote": "255.255.255.255",
   "UdpBroadcastRemotePort": 55555,

@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
+using Osprey.Logging;
 
 namespace Osprey.Http
 {
@@ -94,18 +95,18 @@ namespace Osprey.Http
                 }
                 catch (HttpRequestException ex)
                 {
-                    OSPREY.Network.Logger.Warn(ex.ToString());
+                    OspreyLog.Warn(ex.ToString());
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    OSPREY.Network.Logger.Warn(ex.ToString());
+                    OspreyLog.Warn(ex.ToString());
                     throw;
                 }
 
                 var content = await response.Content.ReadAsStringAsync();
 
-                var deserialized = OSPREY.Network.Serializer.Deserialize<T>(content);
+                var deserialized = Osprey.Network.Serializer.Deserialize<T>(content);
 
                 return deserialized;
             }

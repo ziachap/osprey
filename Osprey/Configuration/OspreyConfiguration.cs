@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 
 namespace Osprey.Configuration
 {
     public class OspreyConfiguration
     {
-        public bool Broadcast { get; set; } = true;
-
-        public bool Discover { get; set; } = true;
-
         public string UdpBroadcastLocalFilter { get; set; }
 
         public string UdpBroadcastLocal { get; set; }

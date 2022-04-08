@@ -2,172 +2,163 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Fclp;
-using Newtonsoft.Json;
+using System.Net;
+using System.Text.RegularExpressions;
+using Osprey.Communication;
 using Osprey.Configuration;
 using Osprey.Logging;
 using Osprey.Serialization;
+using Osprey.ServiceDiscovery;
 using Osprey.Utilities;
 using JsonSerializer = Osprey.Serialization.JsonSerializer;
 
 namespace Osprey
 {
-	public class OSPREY : IDisposable
+    public interface IOsprey : IDisposable
     {
-        private static OSPREY _instance = null;
+        ISerializer Serializer { get; }
 
         /// <summary>
-        /// Access the singleton instance of the connected Osprey network.
+        /// Contains information about this node that is broadcasted to other nodes.
         /// </summary>
-        public static OSPREY Network => _instance ?? throw new Exception("Caller has not joined an Osprey network.");
-
-        public Node Node { get; private set; }
-        public ISerializer Serializer { get; set; }
-        public IOspreyLogger Logger { get; set; }
-        public OspreyConfiguration Config { get; private set; }
-
-        private OSPREY()
-        {
-            Config = new OspreyConfiguration();
-            Serializer = new JsonSerializer();
-            Logger = new ConsoleOspreyLogger();
-        }
+        NodeInfo Info { get; }
 
         /// <summary>
-        /// Overwrites the configuration with an osprey configuration file.
+        /// Start broadcasting and discovering services.
         /// </summary>
-        private void LoadJsonConfiguration(string filepath)
-        {
-            try
-            {
-                var file = File.ReadAllText(filepath);
-                Config = JsonConvert.DeserializeObject<OspreyConfiguration>(file);
-            }
-            catch (FileNotFoundException ex)
-            {
-                Logger.Warn($"No osprey configuration file found. ({filepath})");
-            }
-        }
-        
-        /// <summary>
-        /// Overrides the configuration with any specified command line arguments 
-        /// </summary>
-        private void LoadCommandLineArguments(string[] args)
-        {
-            var p = new FluentCommandLineParser();
-
-            //TODO: Complete these arguments
-            p.Setup<string>('f', "o-udp-local-filter")
-                .WithDescription("")
-                .Callback(value => Config.UdpBroadcastLocalFilter = value);
-
-            p.Setup<string>('l', "o-udp-local")
-                .WithDescription("")
-                .Callback(value => Config.UdpBroadcastLocal = value);
-
-            p.Setup<string>('r', "o-udp-remote")
-                .WithDescription("")
-                .Callback(value => Config.UdpBroadcastRemote = value);
-
-            p.Setup<int>('p', "o-udp-remote-port")
-                .WithDescription("")
-                .Callback(value => Config.UdpBroadcastPort = value);
-
-            p.Setup<bool>('d', "o-use-dns-address")
-                .WithDescription("")
-                .Callback(value => Config.UseDnsAddress = value);
-
-            p.Parse(args);
-        }
-
-        /// <summary>
-        /// Join the Osprey network.
-        /// </summary>
-        /// <param name="service">The name of the service.</param>
-        /// <param name="environment">The environment to be isolated within.</param>
-        /// <param name="configuration">An action to modify the Osprey instance before joining.</param>
-        /// <returns>Disposable osprey instance.</returns>
-        public static OSPREY Join(string service, string environment, Action<OSPREY> configuration = null)
-		{
-            if (_instance != null) throw new Exception("Cannot join the network more than once.");
-            
-            var osprey = new OSPREY();
-            _instance = osprey;
-
-            var filePath = "osprey.json";
-            new FluentCommandLineParser()
-                .Setup<string>("o-config")
-                .Callback(value => filePath = value);
-
-            osprey.LoadJsonConfiguration(filePath);
-            osprey.LoadCommandLineArguments(Environment.GetCommandLineArgs());
-            
-			var id = Guid.NewGuid().ToString();
-
-            configuration?.Invoke(osprey);
-
-            osprey.Node = new Node(id, service, environment);
-            
-            osprey.Node.Start();
-            
-            return osprey;
-        }
+        void Start(bool discover = true, bool broadcast = true);
 
         /// <summary>
         /// Attempt to locate a node on the network.
         /// </summary>
         /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        public NodeInfo Locate(string node, string environment = null, bool throwError = false)
-        {
-            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-
-            environment ??= Node.Info.Environment;
-
-            return Node.Receiver.Locate(node, environment, throwError);
-        }
+        NodeInfo Locate(string node, string environment = null, bool throwError = false);
 
         /// <summary>
         /// Locate all instances of a node on the network.
         /// </summary>
         /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        public IEnumerable<NodeInfo> LocateNodes(string node, string environment = null)
-        {
-            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-             
-            environment ??= Node.Info.Environment;
-
-            return Node.Receiver.LocateAll(node, environment);
-        }
+        IEnumerable<NodeInfo> LocateNodes(string node, string environment = null);
 
         /// <summary>
         /// Locate all nodes on the network for a particular environment.
         /// </summary>
         /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        public IEnumerable<NodeInfo> LocateEnvironment(string environment = null)
-        {
-            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-
-            environment ??= Node.Info.Environment;
-
-            return Node.Receiver.LocateAll(environment);
-        }
+        IEnumerable<NodeInfo> LocateEnvironment(string environment = null);
 
         /// <summary>
         /// Return all nodes across all environments on the network.
         /// </summary>
-        public IEnumerable<NodeInfo> LocateAll()
-        {
-            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-            return Node.Receiver.Active;
-        }
+        IEnumerable<NodeInfo> LocateAll();
 
         /// <summary>
         /// Register a new service to be broadcasted on the network.
         /// </summary>
+        void Register(string type, string name, string address);
+
+        /// <summary>
+        /// Register a new service to be broadcasted on the network.
+        /// </summary>
+        void Register(ServiceInfo service);
+    }
+
+	public class Osprey : IOsprey
+    {
+        public ISerializer Serializer { get; set; }
+        public NodeInfo Info { get; }
+        public Receiver Receiver { get; private set; }
+        public Broadcaster Broadcaster { get; private set; }
+
+        private readonly UdpChannel _broadcastChannel;
+        private bool _started;
+
+        internal Osprey(string nodeName, string environment)
+        {
+            Serializer = new JsonSerializer();
+            
+            var port = Configuration.Configuration.Global.UdpBroadcastPort;
+
+            IPAddress local;
+            if (string.IsNullOrEmpty(Configuration.Configuration.Global.UdpBroadcastLocal))
+            {
+                local = Address.GetLocalUdpBroadcastAddress();
+                OspreyLog.Debug("Using automatic local address: " + local);
+            }
+            else
+            {
+                local = Address.ParseIPAddress(Configuration.Configuration.Global.UdpBroadcastLocal);
+                OspreyLog.Debug("Using local address from config: " + local);
+            }
+
+            var remote = IPAddress.Parse(Configuration.Configuration.Global.UdpBroadcastRemote);
+
+            var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
+
+            Info = new NodeInfo
+            {
+                Id = uid,
+                Name = nodeName,
+                Environment = environment,
+                Ip = local.ToString(),
+            };
+
+            _broadcastChannel = new UdpChannel(remote, local, port);
+        }
+
+        public void Start(bool discover = true, bool broadcast = true)
+        {
+            Receiver = new Receiver(_broadcastChannel, Serializer);
+            Broadcaster = new Broadcaster(_broadcastChannel, this);
+
+            if (discover) Receiver.Start();
+            if (broadcast) Broadcaster.Start();
+
+            OspreyLog.Info($"Node started:");
+            OspreyLog.Info($"  Id:".PadRight(16) + Info.Id);
+            OspreyLog.Info($"  Service:".PadRight(16) + Info.Name);
+            OspreyLog.Info($"  Environment:".PadRight(16) + Info.Environment);
+            OspreyLog.Info($"  Local:".PadRight(16) + Info.Ip);
+            OspreyLog.Info($"  Discover:".PadRight(16) + discover);
+            OspreyLog.Info($"  Broadcast:".PadRight(16) + broadcast);
+
+            _started = true;
+        }
+        
+        public NodeInfo Locate(string node, string environment = null, bool throwError = false)
+        {
+            if (!_started) throw new Exception("Caller has not joined an Osprey network.");
+
+            environment ??= Info.Environment;
+
+            return Receiver.Locate(node, environment, throwError);
+        }
+
+        public IEnumerable<NodeInfo> LocateNodes(string node, string environment = null)
+        {
+            if (!_started) throw new Exception("Caller has not joined an Osprey network.");
+
+            environment ??= Info.Environment;
+
+            return Receiver.LocateAll(node, environment);
+        }
+
+        public IEnumerable<NodeInfo> LocateEnvironment(string environment = null)
+        {
+            if (!_started) throw new Exception("Caller has not joined an Osprey network.");
+
+            environment ??= Info.Environment;
+
+            return Receiver.LocateAll(environment);
+        }
+
+        public IEnumerable<NodeInfo> LocateAll()
+        {
+            if (!_started) throw new Exception("Caller has not joined an Osprey network.");
+            return Receiver.Active;
+        }
+
         public void Register(string type, string name, string address)
         {
-            if (Node == null) throw new Exception("Caller has not joined an Osprey network.");
-
             var service = new ServiceInfo()
             {
                 Type = type,
@@ -175,18 +166,23 @@ namespace Osprey
                 Address = address
             };
 
-            if (Node.Info.Services.Any(x => x.Name == name))
-                throw new Exception("Cannot use the same service name multiple times.");
+            if (Info.Services.Any(x => x.Name == name))
+                throw new Exception("Cannot register the same service name multiple times.");
 
-            Node.Info.Services.Add(service);
+            Info.Services.Add(service);
+        }
+
+        public void Register(ServiceInfo service)
+        {
+            if (Info.Services.Any(x => x.Name == service.Name))
+                throw new Exception("Cannot register the same service name multiple times.");
+
+            Info.Services.Add(service);
         }
 
         public void Dispose()
         {
-            Node.Dispose();
-            Node = null;
-            Serializer = null;
-            _instance = null;
+            _broadcastChannel?.Dispose();
         }
     }
 }

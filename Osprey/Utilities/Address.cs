@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
+using Osprey.Configuration;
+using Osprey.Logging;
 
 namespace Osprey.Utilities
 {
@@ -12,7 +13,9 @@ namespace Osprey.Utilities
     /// </summary>
     public static class Address
     {
-        public static IPAddress ParseIPAddress(this string endpoint)
+        public static IOspreyLogger Logger { get; set; } = new ConsoleOspreyLogger();
+
+        public static IPAddress ParseIPAddress(string endpoint)
         {
             return IPAddress.Parse(endpoint);
         }
@@ -49,18 +52,15 @@ namespace Osprey.Utilities
         /// </summary>
         public static IPAddress GetLocalUdpBroadcastAddress()
         {
-            var config = OSPREY.Network.Config;
-
+            var config = Configuration.Configuration.Global;
             var addresses = GetLocalAddressesIPV4();
 
-            var ipFilter = config.UdpBroadcastLocalFilter;
-
-            if (!string.IsNullOrEmpty(ipFilter))
+            if (!string.IsNullOrEmpty(config.UdpBroadcastLocalFilter))
             {
-                OSPREY.Network.Logger.Debug($"Using preferred local IP filter: {ipFilter}*");
+                Logger.Debug($"Using preferred local IP filter: {config.UdpBroadcastLocalFilter}*");
             }
 
-            var ordered = addresses.OrderByDescending(ip => ip.ToString().StartsWith(ipFilter ?? ""));
+            var ordered = addresses.OrderByDescending(ip => ip.ToString().StartsWith(config.UdpBroadcastLocalFilter ?? ""));
 
             return ordered.First();
         }
@@ -72,17 +72,17 @@ namespace Osprey.Utilities
 
         private static IEnumerable<IPAddress> GetLocalAddressesIPV4()
         {
-            var config = OSPREY.Network.Config;
+            var config = Configuration.Configuration.Global;
 
             if (config.UseDnsAddress)
             {
-                OSPREY.Network.Logger.Debug("Resolving local IP from DNS.");
+                Logger.Debug("Resolving local IP from DNS.");
 
                 var hostName = Dns.GetHostName();
                 var host = Dns.GetHostEntry(hostName);
 
-                OSPREY.Network.Logger.Debug("DNS host name: " + hostName);
-                OSPREY.Network.Logger.Debug("DNS hosts: " + string.Join(", ", host.AddressList.Select(x => (object)x)));
+                Logger.Debug("DNS host name: " + hostName);
+                Logger.Debug("DNS hosts: " + string.Join(", ", host.AddressList.Select(x => (object)x)));
 
                 var filtered = host.AddressList
                     .Where(x => !x.ToString().StartsWith("127"))
@@ -94,10 +94,10 @@ namespace Osprey.Utilities
                 return filtered;
             }
 
-            OSPREY.Network.Logger.Debug("Resolving local IP from a transient socket.");
+            Logger.Debug("Resolving local IP from a transient socket.");
 
             var transientAddress = LocalAddressFromSocket();
-            OSPREY.Network.Logger.Debug("Socket address: " + transientAddress);
+            Logger.Debug("Socket address: " + transientAddress);
 
             if (transientAddress == null) throw new Exception("Unable to resolve address from a transient socket.");
 

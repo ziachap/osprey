@@ -22,4 +22,15 @@ namespace Osprey.NLog
 
         public void Error(string message) => _logger.Error(message);
     }
+
+    public static class NLogOspreyLoggerExtensions
+    {
+        /// <summary>
+        /// Sets the global Osprey logger to use NLog.
+        /// </summary>
+        public static OspreyBuilder UseNLogLogger(this OspreyBuilder builder)
+        {
+            return builder.SetGlobalLogger(new NLogOspreyLogger());
+        }
+    }
 }

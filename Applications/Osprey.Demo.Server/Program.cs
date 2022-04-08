@@ -13,7 +13,7 @@ namespace Osprey.Demo.Server
         {
             Console.WriteLine("========== OSPREY SERVER ==========");
             
-            using (OSPREY.Join("osprey.server", "acceptance"))
+            using (Osprey.Join("osprey.server", "acceptance"))
             using (var zmq = new ZeroMQServer("zmq1"))
             {
                 var topics = new HashSet<string>();
@@ -28,7 +28,7 @@ namespace Osprey.Demo.Server
                         {
                             try
                             {
-                                var id = OSPREY.Network.Node.Info.Id;
+                                var id = Osprey.Network.Node.Info.Id;
                                 var data = new TestData()
                                 {
                                     Data1 = id + " | " + topic + " = " + rnd.Next(1, 999)
@@ -90,7 +90,7 @@ namespace Osprey.Demo.Server
                 {
                     try
                     {
-                        var task = OSPREY.Network.Locate("osprey.client")
+                        var task = Osprey.Network.Locate("osprey.client")
                             .Http()
                             .Send(new HttpMessage<string, string>
                             {

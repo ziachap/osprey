@@ -45,7 +45,7 @@ namespace Osprey.ZeroMQ
             var bytes = data switch
             {
                 string s => Encoding.ASCII.GetBytes(s),
-                _ => Encoding.ASCII.GetBytes(OSPREY.Network.Serializer.Serialize(data))
+                _ => Encoding.ASCII.GetBytes(Osprey.Network.Serializer.Serialize(data))
             };
 
             var length = BitConverter.GetBytes(bytes.Length);

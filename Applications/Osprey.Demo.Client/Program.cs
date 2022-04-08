@@ -12,7 +12,7 @@ namespace Osprey.Demo.Client
         static void Main(string[] args)
         {
             Console.WriteLine("========== OSPREY CLIENT ==========");
-            using (OSPREY.Join("osprey.client", "acceptance"))
+            using (Osprey.Join("osprey.client", "acceptance"))
             using (new HttpServer<DefaultStartup<DefaultNancyBootstrapper>>("http"))
             using (var client = new ZeroMQClient("osprey.server", "zmq1"))
             {

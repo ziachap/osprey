@@ -2,10 +2,11 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Osprey.Logging;
 
 namespace Osprey.Communication
 {
-    public class UdpChannel : IDisposable
+    internal class UdpChannel : IDisposable
     {
         private readonly UdpClient _client;
         private readonly IPEndPoint _local;
@@ -28,7 +29,7 @@ namespace Osprey.Communication
 
             if (IsMulticast(remote))
             {
-                OSPREY.Network.Logger.Debug("Joining multicast group.");
+                OspreyLog.Debug("Joining multicast group.");
                 _client.JoinMulticastGroup(remote, local);
             }
         }
@@ -44,7 +45,7 @@ namespace Osprey.Communication
             var _ = new IPEndPoint(IPAddress.Any, 0);
             var buffer = _client.Receive(ref _);
             var message = Encoding.UTF8.GetString(buffer);
-            //OSPREY.Network.Logger.Trace(message);
+            //OspreyLog.Trace(message);
             return message;
         }
 
@@ -55,8 +56,8 @@ namespace Osprey.Communication
 
         private static bool IsMulticast(IPAddress address)
         {
-            OSPREY.Network.Logger.Debug("Address remote: " + address);
-            OSPREY.Network.Logger.Debug("Address bytes remote [0]: " + address.GetAddressBytes()[0]);
+            OspreyLog.Debug("Address remote: " + address);
+            OspreyLog.Debug("Address bytes remote [0]: " + address.GetAddressBytes()[0]);
             return address.GetAddressBytes()[0] >= 224 && address.GetAddressBytes()[0] <= 239;
         }
     }

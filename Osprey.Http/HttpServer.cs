@@ -29,7 +29,7 @@ namespace Osprey.Http
 
             _webHost.RunAsync();
             
-            OSPREY.Network.Node.Register(new ServiceInfo
+            Osprey.Network.Node.Register(new ServiceInfo
             {
                 Name = name,
                 Address = address.ToString()

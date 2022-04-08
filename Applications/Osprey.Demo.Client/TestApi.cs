@@ -8,7 +8,7 @@ namespace Osprey.Demo.Client
 		{
 			Get("/test", parameters =>
 			{
-				return Response.AsJson("This is " + OSPREY.Network.Node.Info.Id);
+				return Response.AsJson("This is " + Osprey.Network.Node.Info.Id);
 			});
 		}
 	}

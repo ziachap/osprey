@@ -11,23 +11,25 @@ namespace Osprey.Monitor
     {
         static void Main(string[] args)
         {
-            using (OSPREY.Join("osprey.monitor", "production"))
+            var osprey = new OspreyBuilder("osprey.monitor", "production").Build();
+            
+            using (osprey.Run())
             {
                 while (true)
                 {
                     //Console.Clear();
                     Console.WriteLine("========== OSPREY MONITOR ==========");
                     Console.WriteLine("");
-                    PrintDiscovered();
+                    PrintDiscovered(osprey);
 
                     Thread.Sleep(4000);
                 }
             }
         }
 
-        private static void PrintDiscovered()
+        private static void PrintDiscovered(IOsprey osprey)
         {
-            var active = OSPREY.Network.Node.Receiver.Active
+            var active = osprey.LocateAll()
                 .GroupBy(x => x.Environment)
                 .OrderBy(x => x.Key)
                 .ToList();
