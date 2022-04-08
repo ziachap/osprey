@@ -9,8 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Osprey.Http\Osprey.Http.csproj" />
-    <ProjectReference Include="..\..\Osprey.ZeroMQ\Osprey.ZeroMQ.csproj" />
     <ProjectReference Include="..\..\Osprey\Osprey.csproj" />
   </ItemGroup>
 

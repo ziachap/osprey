@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Fclp;
-using Osprey.Http;
-using Osprey.Utilities;
 
 namespace Osprey.Monitor
 {
@@ -13,8 +10,10 @@ namespace Osprey.Monitor
         {
             var osprey = new OspreyBuilder("osprey.monitor", "production").Build();
             
-            using (osprey.Run())
+            using (osprey)
             {
+                osprey.Start();
+
                 while (true)
                 {
                     //Console.Clear();
