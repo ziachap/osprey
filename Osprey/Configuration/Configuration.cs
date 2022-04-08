@@ -14,7 +14,7 @@ namespace Osprey.Configuration
         private static OspreyConfiguration LoadConfiguration()
         {
             // Override config path from command line
-            var filePath = "osprey";
+            var filePath = "osprey.json";
             new FluentCommandLineParser()
                 .Setup<string>("o-config")
                 .Callback(value => filePath = value);
