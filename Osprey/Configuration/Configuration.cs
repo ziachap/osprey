@@ -2,6 +2,7 @@
 using System.IO;
 using Fclp;
 using Newtonsoft.Json;
+using Osprey.Logging;
 
 namespace Osprey.Configuration
 {
@@ -39,7 +40,7 @@ namespace Osprey.Configuration
             }
             catch (FileNotFoundException ex)
             {
-                //_logger.Warn($"No osprey configuration file found. ({filepath})"); // TODO
+                OspreyLog.Warn($"No osprey configuration file found. ({filepath})");
                 return new OspreyConfiguration();
             }
         }
