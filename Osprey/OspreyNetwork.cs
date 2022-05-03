@@ -21,7 +21,7 @@ namespace Osprey
         /// <summary>
         /// Contains information about this node that is broadcasted to other nodes.
         /// </summary>
-        NodeInfo Info { get; }
+        NodeInfo Node { get; }
 
         /// <summary>
         /// Start broadcasting and discovering services.
@@ -62,17 +62,17 @@ namespace Osprey
         void Register(ServiceInfo service);
     }
 
-	public class Osprey : IOsprey
+	public class OspreyNetwork : IOsprey
     {
         public ISerializer Serializer { get; set; }
-        public NodeInfo Info { get; }
+        public NodeInfo Node { get; }
         public Receiver Receiver { get; private set; }
         public Broadcaster Broadcaster { get; private set; }
 
         private readonly UdpChannel _broadcastChannel;
         private bool _started;
 
-        internal Osprey(string nodeName, string environment)
+        internal OspreyNetwork(string nodeName, string environment)
         {
             Serializer = new JsonSerializer();
             
@@ -94,7 +94,7 @@ namespace Osprey
 
             var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
 
-            Info = new NodeInfo
+            Node = new NodeInfo
             {
                 Id = uid,
                 Name = nodeName,
@@ -114,10 +114,10 @@ namespace Osprey
             if (broadcast) Broadcaster.Start();
 
             OspreyLog.Info($"Node started:");
-            OspreyLog.Info($"  Id:".PadRight(16) + Info.Id);
-            OspreyLog.Info($"  Service:".PadRight(16) + Info.Name);
-            OspreyLog.Info($"  Environment:".PadRight(16) + Info.Environment);
-            OspreyLog.Info($"  Local:".PadRight(16) + Info.Ip);
+            OspreyLog.Info($"  Id:".PadRight(16) + Node.Id);
+            OspreyLog.Info($"  Service:".PadRight(16) + Node.Name);
+            OspreyLog.Info($"  Environment:".PadRight(16) + Node.Environment);
+            OspreyLog.Info($"  Local:".PadRight(16) + Node.Ip);
             OspreyLog.Info($"  Discover:".PadRight(16) + discover);
             OspreyLog.Info($"  Broadcast:".PadRight(16) + broadcast);
 
@@ -128,7 +128,7 @@ namespace Osprey
         {
             if (!_started) throw new Exception("Caller has not joined an Osprey network.");
 
-            environment ??= Info.Environment;
+            environment ??= Node.Environment;
 
             return Receiver.Locate(node, environment, throwError);
         }
@@ -137,7 +137,7 @@ namespace Osprey
         {
             if (!_started) throw new Exception("Caller has not joined an Osprey network.");
 
-            environment ??= Info.Environment;
+            environment ??= Node.Environment;
 
             return Receiver.LocateAll(node, environment);
         }
@@ -146,7 +146,7 @@ namespace Osprey
         {
             if (!_started) throw new Exception("Caller has not joined an Osprey network.");
 
-            environment ??= Info.Environment;
+            environment ??= Node.Environment;
 
             return Receiver.LocateAll(environment);
         }
@@ -166,18 +166,18 @@ namespace Osprey
                 Address = address
             };
 
-            if (Info.Services.Any(x => x.Name == name))
+            if (Node.Services.Any(x => x.Name == name))
                 throw new Exception("Cannot register the same service name multiple times.");
 
-            Info.Services.Add(service);
+            Node.Services.Add(service);
         }
 
         public void Register(ServiceInfo service)
         {
-            if (Info.Services.Any(x => x.Name == service.Name))
+            if (Node.Services.Any(x => x.Name == service.Name))
                 throw new Exception("Cannot register the same service name multiple times.");
 
-            Info.Services.Add(service);
+            Node.Services.Add(service);
         }
 
         public void Dispose()

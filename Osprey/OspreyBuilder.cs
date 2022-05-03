@@ -46,7 +46,7 @@ namespace Osprey
             // Force the configuration to initialize
             var _ = Configuration.Configuration.Global;
 
-            var osprey = new Osprey(_nodeName, _environment);
+            var osprey = new OspreyNetwork(_nodeName, _environment);
             
             // Register services
             foreach (var serviceInfo in _services)

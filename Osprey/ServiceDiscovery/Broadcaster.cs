@@ -23,7 +23,7 @@ namespace Osprey.ServiceDiscovery
 			{
 				while (true)
 				{
-                    Send(_osprey.Info);
+                    Send(_osprey.Node);
 					Thread.Sleep(Configuration.Configuration.Global.BroadcastInterval);
 				}
 			}, TaskCreationOptions.LongRunning);
