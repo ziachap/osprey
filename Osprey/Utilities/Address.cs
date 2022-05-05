@@ -13,8 +13,6 @@ namespace Osprey.Utilities
     /// </summary>
     public static class Address
     {
-        public static IOspreyLogger Logger { get; set; } = new ConsoleOspreyLogger();
-
         public static IPAddress ParseIPAddress(string endpoint)
         {
             return IPAddress.Parse(endpoint);
@@ -52,12 +50,12 @@ namespace Osprey.Utilities
         /// </summary>
         public static IPAddress GetLocalUdpBroadcastAddress()
         {
-            var config = Configuration.Configuration.Global;
+            var config = Config.Global;
             var addresses = GetLocalAddressesIPV4();
 
             if (!string.IsNullOrEmpty(config.UdpBroadcastLocalFilter))
             {
-                Logger.Debug($"Using preferred local IP filter: {config.UdpBroadcastLocalFilter}*");
+                OspreyLog.Debug($"Using preferred local IP filter: {config.UdpBroadcastLocalFilter}*");
             }
 
             var ordered = addresses.OrderByDescending(ip => ip.ToString().StartsWith(config.UdpBroadcastLocalFilter ?? ""));
@@ -72,17 +70,17 @@ namespace Osprey.Utilities
 
         private static IEnumerable<IPAddress> GetLocalAddressesIPV4()
         {
-            var config = Configuration.Configuration.Global;
+            var config = Config.Global;
 
             if (config.UseDnsAddress)
             {
-                Logger.Debug("Resolving local IP from DNS.");
+                OspreyLog.Debug("Resolving local IP from DNS.");
 
                 var hostName = Dns.GetHostName();
                 var host = Dns.GetHostEntry(hostName);
 
-                Logger.Debug("DNS host name: " + hostName);
-                Logger.Debug("DNS hosts: " + string.Join(", ", host.AddressList.Select(x => (object)x)));
+                OspreyLog.Debug("DNS host name: " + hostName);
+                OspreyLog.Debug("DNS hosts: " + string.Join(", ", host.AddressList.Select(x => (object)x)));
 
                 var filtered = host.AddressList
                     .Where(x => !x.ToString().StartsWith("127"))
@@ -94,10 +92,10 @@ namespace Osprey.Utilities
                 return filtered;
             }
 
-            Logger.Debug("Resolving local IP from a transient socket.");
+            OspreyLog.Debug("Resolving local IP from a transient socket.");
 
             var transientAddress = LocalAddressFromSocket();
-            Logger.Debug("Socket address: " + transientAddress);
+            OspreyLog.Debug("Socket address: " + transientAddress);
 
             if (transientAddress == null) throw new Exception("Unable to resolve address from a transient socket.");
 

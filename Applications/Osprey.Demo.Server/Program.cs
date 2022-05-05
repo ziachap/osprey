@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Osprey.Builder;
 
 namespace Osprey.Demo.Server
 {

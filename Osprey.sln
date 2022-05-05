@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Osprey.SignalR", "Osprey.Si
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Osprey.NLog", "Osprey.NLog\Osprey.NLog.csproj", "{C9BBF51B-F18E-48A3-A288-09AE026624C1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{37F4EDA7-0B52-4AB4-9A8C-72F7854AC5A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Osprey.Tests", "Tests\Osprey.Tests\Osprey.Tests.csproj", "{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +51,10 @@ Global
 		{C9BBF51B-F18E-48A3-A288-09AE026624C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9BBF51B-F18E-48A3-A288-09AE026624C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9BBF51B-F18E-48A3-A288-09AE026624C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +63,7 @@ Global
 		{EAE77F18-757C-47A3-9B4E-1058BDADB64C} = {3F4D4865-C0AF-4F7B-A6EA-100A4F4EF481}
 		{464CC729-94EA-4768-8F1B-58CA2BE340A4} = {3F4D4865-C0AF-4F7B-A6EA-100A4F4EF481}
 		{9D49C8D7-6937-4A52-9236-BE1B11057702} = {3F4D4865-C0AF-4F7B-A6EA-100A4F4EF481}
+		{00A2A26B-1EF3-4543-90BB-6F8C3AA1657C} = {37F4EDA7-0B52-4AB4-9A8C-72F7854AC5A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {891769A8-F0E3-422D-928B-74BBD300B3FA}

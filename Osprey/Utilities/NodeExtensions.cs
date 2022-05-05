@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Osprey.ServiceDiscovery;
+using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.Utilities
 {

@@ -4,14 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Osprey.Communication;
+using Osprey.Configuration;
 using Osprey.Logging;
 using Osprey.Serialization;
+using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.ServiceDiscovery
 {
     public class Receiver
     {
-        private readonly UdpChannel _client;
+        private readonly IChannel _channel;
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, NodeInfoEntry> _discovered;
 
@@ -23,9 +25,9 @@ namespace Osprey.ServiceDiscovery
         public event Action<NodeInfo> OnDiscover;
         //public event Action<NodeInfo> OnLost; // TODO
 
-        internal Receiver(UdpChannel client, ISerializer serializer)
+        internal Receiver(IChannel channel, ISerializer serializer)
         {
-            _client = client;
+            _channel = channel;
             _serializer = serializer;
             _discovered = new ConcurrentDictionary<string, NodeInfoEntry>();
         }
@@ -39,12 +41,12 @@ namespace Osprey.ServiceDiscovery
                     try
                     {
 
-                        var message = _client.Receive();
+                        var message = _channel.Receive();
 
                         _discovered.AddOrUpdate(message, msg =>
                         {
                             var nodeInfo = _serializer.Deserialize<NodeInfo>(message);
-                            var nodeInfoEntry = new NodeInfoEntry(nodeInfo, Configuration.Configuration.Global.DiscoveryTimeout);
+                            var nodeInfoEntry = new NodeInfoEntry(nodeInfo, Config.Global.DiscoveryTimeout);
                             OnDiscover?.Invoke(nodeInfo);
                             return nodeInfoEntry;
                         }, (msg, node) =>
@@ -64,18 +66,18 @@ namespace Osprey.ServiceDiscovery
             }, TaskCreationOptions.LongRunning);
         }
 
-        internal NodeInfo Locate(string service, string environment, bool throwError = false)
+        internal NodeInfo Locate(string node, string environment, bool throwError = false)
         {
             return Active
-                       .Where(x => x.Name == service && x.Environment == environment)
+                       .Where(x => x.Name == node && x.Environment == environment)
                        .OrderBy(x => Guid.NewGuid())
                        .FirstOrDefault()
                    ?? (throwError ? throw new ServiceUnavailableException("Service not found") : (NodeInfo)null);
         }
 
-        internal IEnumerable<NodeInfo> LocateAll(string service, string environment)
+        internal IEnumerable<NodeInfo> LocateAll(string node, string environment)
         {
-            return Active.Where(x => x.Name == service && x.Environment == environment);
+            return Active.Where(x => x.Name == node && x.Environment == environment);
         }
 
         internal IEnumerable<NodeInfo> LocateAll(string environment)

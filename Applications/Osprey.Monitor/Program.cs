@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using Osprey.Builder;
 
 namespace Osprey.Monitor
 {

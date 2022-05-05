@@ -6,7 +6,7 @@ using Osprey.Logging;
 
 namespace Osprey.Configuration
 {
-    public static class Configuration
+    public static class Config
     {
         private static OspreyConfiguration _global;
 

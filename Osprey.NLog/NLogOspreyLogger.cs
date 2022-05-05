@@ -1,4 +1,5 @@
 ﻿using NLog;
+using Osprey.Builder;
 using Osprey.Logging;
 
 namespace Osprey.NLog

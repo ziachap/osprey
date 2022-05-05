@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
 
-namespace Osprey
+namespace Osprey.ServiceDiscovery.Data
 {
     /// <summary>
     /// Contains information about a node.

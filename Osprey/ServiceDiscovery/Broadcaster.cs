@@ -3,15 +3,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Osprey.Communication;
 using Osprey.Configuration;
+using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.ServiceDiscovery
 {
     public class Broadcaster
     {
-		private readonly UdpChannel _channel;
+		private readonly IChannel _channel;
         private readonly IOsprey _osprey;
 
-		internal Broadcaster(UdpChannel channel, IOsprey osprey)
+		internal Broadcaster(IChannel channel, IOsprey osprey)
 		{
 			_channel = channel;
             _osprey = osprey;
@@ -24,7 +25,7 @@ namespace Osprey.ServiceDiscovery
 				while (true)
 				{
                     Send(_osprey.Node);
-					Thread.Sleep(Configuration.Configuration.Global.BroadcastInterval);
+					Thread.Sleep(Config.Global.BroadcastInterval);
 				}
 			}, TaskCreationOptions.LongRunning);
 		}

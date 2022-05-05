@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Osprey.Configuration;
 using Osprey.Logging;
+using Osprey.ServiceDiscovery;
+using Osprey.ServiceDiscovery.Data;
 
-namespace Osprey
+namespace Osprey.Builder
 {
     public class OspreyBuilder
     {
@@ -44,7 +46,7 @@ namespace Osprey
         public IOsprey Build()
         {
             // Force the configuration to initialize
-            var _ = Configuration.Configuration.Global;
+            var _ = Config.Global;
 
             var osprey = new OspreyNetwork(_nodeName, _environment);
             

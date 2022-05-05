@@ -3,66 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Osprey.Communication;
 using Osprey.Configuration;
 using Osprey.Logging;
 using Osprey.Serialization;
 using Osprey.ServiceDiscovery;
+using Osprey.ServiceDiscovery.Data;
 using Osprey.Utilities;
 using JsonSerializer = Osprey.Serialization.JsonSerializer;
 
 namespace Osprey
 {
-    public interface IOsprey : IDisposable
-    {
-        ISerializer Serializer { get; }
-
-        /// <summary>
-        /// Contains information about this node that is broadcasted to other nodes.
-        /// </summary>
-        NodeInfo Node { get; }
-
-        /// <summary>
-        /// Start broadcasting and discovering services.
-        /// </summary>
-        void Start(bool discover = true, bool broadcast = true);
-
-        /// <summary>
-        /// Attempt to locate a node on the network.
-        /// </summary>
-        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        NodeInfo Locate(string node, string environment = null, bool throwError = false);
-
-        /// <summary>
-        /// Locate all instances of a node on the network.
-        /// </summary>
-        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        IEnumerable<NodeInfo> LocateNodes(string node, string environment = null);
-
-        /// <summary>
-        /// Locate all nodes on the network for a particular environment.
-        /// </summary>
-        /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
-        IEnumerable<NodeInfo> LocateEnvironment(string environment = null);
-
-        /// <summary>
-        /// Return all nodes across all environments on the network.
-        /// </summary>
-        IEnumerable<NodeInfo> LocateAll();
-
-        /// <summary>
-        /// Register a new service to be broadcasted on the network.
-        /// </summary>
-        void Register(string type, string name, string address);
-
-        /// <summary>
-        /// Register a new service to be broadcasted on the network.
-        /// </summary>
-        void Register(ServiceInfo service);
-    }
-
-	public class OspreyNetwork : IOsprey
+    public class OspreyNetwork : IOsprey
     {
         public ISerializer Serializer { get; set; }
         public NodeInfo Node { get; }
@@ -76,21 +30,21 @@ namespace Osprey
         {
             Serializer = new JsonSerializer();
             
-            var port = Configuration.Configuration.Global.UdpBroadcastPort;
+            var port = Config.Global.UdpBroadcastPort;
 
             IPAddress local;
-            if (string.IsNullOrEmpty(Configuration.Configuration.Global.UdpBroadcastLocal))
+            if (string.IsNullOrEmpty(Config.Global.UdpBroadcastLocal))
             {
                 local = Address.GetLocalUdpBroadcastAddress();
                 OspreyLog.Debug("Using automatic local address: " + local);
             }
             else
             {
-                local = Address.ParseIPAddress(Configuration.Configuration.Global.UdpBroadcastLocal);
+                local = Address.ParseIPAddress(Config.Global.UdpBroadcastLocal);
                 OspreyLog.Debug("Using local address from config: " + local);
             }
 
-            var remote = IPAddress.Parse(Configuration.Configuration.Global.UdpBroadcastRemote);
+            var remote = IPAddress.Parse(Config.Global.UdpBroadcastRemote);
 
             var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
 

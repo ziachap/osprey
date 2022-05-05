@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace Osprey
+namespace Osprey.ServiceDiscovery.Data
 {
     /// <summary>
     /// Describes a service on a node.

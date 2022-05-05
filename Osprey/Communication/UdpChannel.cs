@@ -6,7 +6,7 @@ using Osprey.Logging;
 
 namespace Osprey.Communication
 {
-    internal class UdpChannel : IDisposable
+    internal class UdpChannel : IChannel, IDisposable
     {
         private readonly UdpClient _client;
         private readonly IPEndPoint _local;
