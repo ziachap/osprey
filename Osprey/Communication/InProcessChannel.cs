@@ -1,27 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Osprey.Communication
 {
     internal class InProcessChannel : IChannel
     {
-        private readonly Queue<string> _queue;
+        private readonly BlockingCollection<string> _queue;
 
         public InProcessChannel()
         {
-            _queue = new Queue<string>();
+            _queue = new BlockingCollection<string>();
         }
         
-        public void Send(string msg)
-        {
-            _queue.Enqueue(msg);
-        }
+        public void Send(string msg) => _queue.Add(msg);
 
-        public string Receive()
-        {
-            string msg;
-            while (!_queue.TryDequeue(out msg)) { }
-            return msg;
-        }
+        public string Receive() => _queue.Take();
     }
 }

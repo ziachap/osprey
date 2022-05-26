@@ -28,7 +28,7 @@ namespace Osprey.Tests.ServiceDiscovery
                 Environment = "testing"
             });
             
-            Thread.Sleep(100);
+            Thread.Sleep(300);
 
             var active = receiver.Active;
 
@@ -51,7 +51,7 @@ namespace Osprey.Tests.ServiceDiscovery
                 Environment = "testing"
             });
             
-            Thread.Sleep(100);
+            Thread.Sleep(300);
 
             var active = receiver.Active;
 
@@ -79,7 +79,7 @@ namespace Osprey.Tests.ServiceDiscovery
                 Environment = "testing"
             });
 
-            Thread.Sleep(100);
+            Thread.Sleep(300);
 
             var result = receiver.Locate("node1", "testing", true);
 
@@ -107,7 +107,7 @@ namespace Osprey.Tests.ServiceDiscovery
                 Environment = "testing2"
             });
 
-            Thread.Sleep(100);
+            Thread.Sleep(300);
 
             var result = receiver.Locate("node1", "testing2", true);
 
