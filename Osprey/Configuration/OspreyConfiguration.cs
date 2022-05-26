@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Osprey.Configuration
@@ -48,5 +49,27 @@ namespace Osprey.Configuration
         /// obtained through a transient socket.
         /// </summary>
         public bool UseDnsAddress { get; set; } = true;
+
+        public bool EnableServiceOverrides { get; set; }
+
+        public IEnumerable<NodeOverride> ServiceOverrides { get; set; } = Array.Empty<NodeOverride>();
+    }
+
+    public class NodeOverride
+    {
+        public bool Enabled { get; set; }
+
+        public string Name { get; set; }
+
+        public IEnumerable<ServiceOverride> Services { get; set; }
+    }
+
+    public class ServiceOverride
+    {
+        public string Name { get; set; }
+
+        public string Type { get; set; }
+
+        public string Address { get; set; }
     }
 }

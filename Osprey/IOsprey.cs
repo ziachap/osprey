@@ -23,13 +23,13 @@ namespace Osprey
         void Start(bool discover = true, bool broadcast = true);
 
         /// <summary>
-        /// Attempt to locate a node on the network.
+        /// Locate a node on the network. Will include service overrides.
         /// </summary>
         /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
         NodeInfo Locate(string node, string environment = null, bool throwError = false);
 
         /// <summary>
-        /// Locate all instances of a node on the network.
+        /// Locate all instances of a node on the network. Will include service overrides.
         /// </summary>
         /// <param name="environment">Restrict to a particular environment. If null, uses current environment.</param>
         IEnumerable<NodeInfo> LocateNodes(string node, string environment = null);

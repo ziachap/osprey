@@ -74,6 +74,18 @@ namespace Osprey
             OspreyLog.Info($"  Local:".PadRight(16) + Node.Ip);
             OspreyLog.Info($"  Discover:".PadRight(16) + discover);
             OspreyLog.Info($"  Broadcast:".PadRight(16) + broadcast);
+            if (Config.Global.EnableServiceOverrides)
+            {
+                OspreyLog.Info($"  Service Overrides:");
+                foreach (var nodeOverride in Config.Global.ServiceOverrides.Where(x => x.Enabled))
+                {
+                    OspreyLog.Info($"  - {nodeOverride.Name}:");
+                    foreach (var serviceOverride in nodeOverride.Services)
+                    {
+                        OspreyLog.Info($"      {serviceOverride.Name}:".PadRight(16) + serviceOverride.Address);
+                    }
+                }
+            }
 
             _started = true;
         }
@@ -84,6 +96,8 @@ namespace Osprey
 
             environment ??= Node.Environment;
 
+            if (TryOverride(node, environment, out var nodeInfo)) return nodeInfo;
+
             return Receiver.Locate(node, environment, throwError);
         }
 
@@ -93,6 +107,8 @@ namespace Osprey
 
             environment ??= Node.Environment;
 
+            if (TryOverride(node, environment, out var nodeInfo)) return new [] {nodeInfo};
+
             return Receiver.LocateAll(node, environment);
         }
 
@@ -101,7 +117,7 @@ namespace Osprey
             if (!_started) throw new Exception("Caller has not joined an Osprey network.");
 
             environment ??= Node.Environment;
-
+            
             return Receiver.LocateAll(environment);
         }
 
@@ -109,6 +125,41 @@ namespace Osprey
         {
             if (!_started) throw new Exception("Caller has not joined an Osprey network.");
             return Receiver.Active;
+        }
+
+        private bool TryOverride(string node, string environment, out NodeInfo nodeInfo)
+        {
+            nodeInfo = (NodeInfo)null;
+
+            if (Config.Global.EnableServiceOverrides)
+            {
+                var nodeOverride = Config.Global.ServiceOverrides
+                    .Where(x => x.Enabled)
+                    .FirstOrDefault(x => x.Name == node);
+
+                if (nodeOverride != null)
+                {
+                    nodeInfo = new NodeInfo()
+                    {
+                        Id = nodeOverride.Name + "_override",
+                        Environment = environment,
+                        Ip = null,
+                        Name = nodeOverride.Name,
+                        Services = nodeOverride.Services.Select(x => new ServiceInfo
+                        {
+                            Name = x.Name,
+                            Type = x.Type,
+                            Address = x.Address
+                        }).ToList()
+                    };
+
+                    OspreyLog.Debug($"Using override for '{node}'.");
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void Register(string type, string name, string address)

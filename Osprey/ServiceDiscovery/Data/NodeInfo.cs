@@ -31,6 +31,6 @@ namespace Osprey.ServiceDiscovery.Data
         public string Ip { get; set; }
 
         [JsonProperty("s")]
-        public List<ServiceInfo> Services { get; }
+        public List<ServiceInfo> Services { get; set; }
     }
 }

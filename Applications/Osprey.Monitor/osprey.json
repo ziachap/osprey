@@ -4,5 +4,19 @@
   "UdpBroadcastRemotePort": 55555,
   "BroadcastInterval": 1000,
   "DiscoveryTimeout": 3000,
-  "UseDnsAddress": true
+  "UseDnsAddress": true,
+  "EnableServiceOverrides": true, 
+  "ServiceOverrides": [
+    {
+      "Enabled": true,
+      "Name": "gateway",
+      "Services": [
+        {
+          "Name": "http",
+          "Type": "http",
+          "Address": "sc-lon-app-prd.lan.seqlondon:54442"
+        }
+      ]
+    }
+  ]
 }
