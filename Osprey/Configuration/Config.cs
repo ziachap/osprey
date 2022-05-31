@@ -53,23 +53,23 @@ namespace Osprey.Configuration
             var p = new FluentCommandLineParser();
 
             //TODO: Complete these arguments
-            p.Setup<string>('f', "o-udp-local-filter")
+            p.Setup<string>("o-udp-local-filter")
                 .WithDescription("")
                 .Callback(value => config.UdpBroadcastLocalFilter = value);
 
-            p.Setup<string>('l', "o-udp-local")
+            p.Setup<string>("o-udp-local")
                 .WithDescription("")
                 .Callback(value => config.UdpBroadcastLocal = value);
 
-            p.Setup<string>('r', "o-udp-remote")
+            p.Setup<string>("o-udp-remote")
                 .WithDescription("")
                 .Callback(value => config.UdpBroadcastRemote = value);
 
-            p.Setup<int>('p', "o-udp-remote-port")
+            p.Setup<int>("o-udp-remote-port")
                 .WithDescription("")
                 .Callback(value => config.UdpBroadcastPort = value);
 
-            p.Setup<bool>('d', "o-use-dns-address")
+            p.Setup<bool>("o-use-dns-address")
                 .WithDescription("")
                 .Callback(value => config.UseDnsAddress = value);
 

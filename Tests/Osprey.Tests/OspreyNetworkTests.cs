@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using FluentAssertions;
 using NUnit.Framework;
 using Osprey.Communication;
 using Osprey.Configuration;
-using Osprey.Serialization;
-using Osprey.ServiceDiscovery;
-using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.Tests
 {
@@ -17,9 +11,9 @@ namespace Osprey.Tests
         [Test]
         public void OspreyNetwork_Uses_InProcessChannel_When_DisableNetworking_Is_True()
         {
+            Config.Global.DisableUdpNetworking = true;
             using (var network = new OspreyNetwork("test", "test_env"))
             {
-                Config.Global.DisableUdpNetworking = true;
                 network._broadcastChannel.Should().BeOfType<InProcessChannel>();
             }
         }
@@ -27,10 +21,10 @@ namespace Osprey.Tests
         [Test]
         public void OspreyNetwork_Uses_UdpChannel_When_DisableNetworking_Is_False()
         {
+            Config.Global.DisableUdpNetworking = false;
             using (var network = new OspreyNetwork("test", "test_env"))
             {
-                Config.Global.DisableUdpNetworking = false;
-                network._broadcastChannel.Should().BeOfType<InProcessChannel>();
+                network._broadcastChannel.Should().BeOfType<UdpChannel>();
             }
         }
     }
