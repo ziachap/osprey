@@ -1,6 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Osprey.Communication
 {
@@ -16,5 +14,10 @@ namespace Osprey.Communication
         public void Send(string msg) => _queue.Add(msg);
 
         public string Receive() => _queue.Take();
+
+        public void Dispose()
+        {
+            _queue?.Dispose();
+        }
     }
 }

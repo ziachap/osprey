@@ -50,7 +50,15 @@ namespace Osprey.Configuration
         /// </summary>
         public bool UseDnsAddress { get; set; } = true;
 
-        public bool EnableServiceOverrides { get; set; }
+        /// <summary>
+        /// Uses an in-process channel for communication, disabling the UDP multi-cast connection.
+        /// </summary>
+        public bool DisableUdpNetworking { get; set; } = false;
+
+        /// <summary>
+        /// Use the configured service overrides.
+        /// </summary>
+        public bool EnableServiceOverrides { get; set; } = false;
 
         public IEnumerable<NodeOverride> ServiceOverrides { get; set; } = Array.Empty<NodeOverride>();
     }

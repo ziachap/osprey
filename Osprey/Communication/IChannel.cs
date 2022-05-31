@@ -1,6 +1,8 @@
-﻿namespace Osprey.Communication
+﻿using System;
+
+namespace Osprey.Communication
 {
-    internal interface IChannel
+    internal interface IChannel : IDisposable
     {
         void Send(string msg);
 

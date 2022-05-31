@@ -54,7 +54,12 @@ namespace Osprey.ServiceDiscovery
                             node.Update();
                             return node;
                         });
-                        
+
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        OspreyLog.Warn("Channel has been disposed.");
+                        throw;
                     }
                     catch (Exception ex)
                     {

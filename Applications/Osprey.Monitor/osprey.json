@@ -5,7 +5,8 @@
   "BroadcastInterval": 1000,
   "DiscoveryTimeout": 3000,
   "UseDnsAddress": true,
-  "EnableServiceOverrides": true, 
+  "DisableUdpNetworking": false,
+  "EnableServiceOverrides": true,
   "ServiceOverrides": [
     {
       "Enabled": true,

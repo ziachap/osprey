@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Osprey.Serialization;
-using Osprey.ServiceDiscovery;
 using Osprey.ServiceDiscovery.Data;
 
 [assembly: InternalsVisibleTo("Osprey.Tests")]

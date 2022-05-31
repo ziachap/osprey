@@ -5,7 +5,8 @@
   "BroadcastInterval": 1000,
   "DiscoveryTimeout": 3000,
   "UseDnsAddress": true,
-  "EnableServiceOverrides": true, 
+  "DisableUdpNetworking": false,
+  "EnableServiceOverrides": false,
   "ServiceOverrides": [
     {
       "Enabled": true,
@@ -14,9 +15,9 @@
         {
           "Name": "http",
           "Type": "http",
-          "Address": "sc-lon-app-prd.lan.seqlondon:54442" 
+          "Address": "sc-lon-app-prd.lan.seqlondon:54442"
         }
-      ] 
+      ]
     }
-  ] 
+  ]
 }

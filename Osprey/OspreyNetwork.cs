@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Osprey.Communication;
 using Osprey.Configuration;
@@ -18,12 +16,13 @@ namespace Osprey
 {
     public class OspreyNetwork : IOsprey
     {
+        internal readonly IChannel _broadcastChannel;
+
         public ISerializer Serializer { get; set; }
         public NodeInfo Node { get; }
         public Receiver Receiver { get; private set; }
         public Broadcaster Broadcaster { get; private set; }
 
-        private readonly UdpChannel _broadcastChannel;
         private bool _started;
 
         internal OspreyNetwork(string nodeName, string environment)
@@ -32,19 +31,7 @@ namespace Osprey
             
             var port = Config.Global.UdpBroadcastPort;
 
-            IPAddress local;
-            if (string.IsNullOrEmpty(Config.Global.UdpBroadcastLocal))
-            {
-                local = Address.GetLocalUdpBroadcastAddress();
-                OspreyLog.Debug("Using automatic local address: " + local);
-            }
-            else
-            {
-                local = Address.ParseIPAddress(Config.Global.UdpBroadcastLocal);
-                OspreyLog.Debug("Using local address from config: " + local);
-            }
-
-            var remote = IPAddress.Parse(Config.Global.UdpBroadcastRemote);
+            var local = LocalAddress();
 
             var uid = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
 
@@ -55,8 +42,35 @@ namespace Osprey
                 Environment = environment,
                 Ip = local.ToString(),
             };
+            
+            if (Config.Global.DisableUdpNetworking)
+            {
+                OspreyLog.Warn("Networking disabled, using in-process channel.");
+                _broadcastChannel = new InProcessChannel();
+            }
+            else
+            {
+                var remote = IPAddress.Parse(Config.Global.UdpBroadcastRemote);
+                _broadcastChannel = new UdpChannel(remote, local, port);
+            }
+        }
 
-            _broadcastChannel = new UdpChannel(remote, local, port);
+        private static IPAddress LocalAddress()
+        {
+            if (Config.Global.DisableUdpNetworking) return IPAddress.Loopback;
+
+            if (string.IsNullOrEmpty(Config.Global.UdpBroadcastLocal))
+            {
+                var local = Address.GetLocalUdpBroadcastAddress();
+                OspreyLog.Debug("Using automatic local address: " + local);
+                return local;
+            }
+            else
+            {
+                var local = Address.ParseIPAddress(Config.Global.UdpBroadcastLocal);
+                OspreyLog.Debug("Using local address from config: " + local);
+                return local;
+            }
         }
 
         public void Start(bool discover = true, bool broadcast = true)
