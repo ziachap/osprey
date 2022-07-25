@@ -1,16 +1,17 @@
 # Osprey
 
-Osprey is a .NET library for messaging and streaming across distributed systems intended for use on local area networks. It is designed to require zero configuration and be fully decentralised, meaning a large number of distributed services can interact with eachother and handle failures without intervention. For example, suppose a client application is receiving data through a SignalR feed from a service. If the server fails, the client can automatically locate an equivalent service and re-establish the SignalR feed.
+Osprey is a decentralized service discovery library that seeks to solve challenges around building flexible distributed systems with ephemeral services:
 
-Features:
-* Decentralized service discovery
-* Automatic load balancing
-* SignalR support
-* Simple and lightweight
+- Can be run with zero configuration.
+- Dynamically discovers new services added to and removed from the network.
+- No need for a centralized store of available services.
+- Allows for distributed systems to be built using built-in load balancing.
+- Supports SignalR
+- Simple and lightweight
 
 Here is a node called `osprey.server` on environment `production` setting itself up:
 ```
-using (var osprey = new OspreyBuilder("osprey.server", "production").Build())
+using (var osprey = new OspreyBuilder("my.server", "production").Build())
 {
     osprey.Start();
 
@@ -21,4 +22,11 @@ using (var osprey = new OspreyBuilder("osprey.server", "production").Build())
 }
 ```
 
-Osprey can be extended to the internet or WAN using the `Osprey.Bridge` application which acts as a proxy, relaying osprey's UDP messages from one network to another using HTTP.
+## Osprey.Dashboard
+Osprey Dashboard provides a convenient way to view what services are running in the network and provides alerts when the system is not in a desirable state.
+
+## Osprey.Bridge
+Osprey can be extended over the internet or a WAN using the `Osprey.Bridge` application which acts as a proxy, relaying osprey's UDP messages from one network to another using HTTP.
+
+## Osprey.Portal
+Osprey based services can be accessed through a web browser using the `Osprey.Portal` server application.
