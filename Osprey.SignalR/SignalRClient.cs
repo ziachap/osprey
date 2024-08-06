@@ -42,6 +42,11 @@ namespace Osprey.SignalR
         /// Invokes a hub method on the server using the specified method name and arguments.
         /// </summary>
         Task InvokeCoreAsync(string method, params object[] args);
+
+        /// <summary>
+        /// Invokes a hub method on the server using the specified method name and arguments.
+        /// </summary>
+        Task InvokeCoreAsync(string method, object[] args, CancellationToken cancellationToken);
     }
     
     public class OspreySignalRClient : IOspreySignalRClient
@@ -136,6 +141,11 @@ namespace Osprey.SignalR
         public Task InvokeCoreAsync(string method, params object[] args)
         {
             return _connection.InvokeCoreAsync(method, args);
+        }
+
+        public Task InvokeCoreAsync(string method, object[] args, CancellationToken cancellationToken)
+        {
+            return _connection.InvokeCoreAsync(method, args, cancellationToken);
         }
 
         public void Dispose()
