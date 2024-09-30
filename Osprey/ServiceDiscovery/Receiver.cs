@@ -77,7 +77,9 @@ namespace Osprey.ServiceDiscovery
                        .Where(x => x.Name == node && x.Environment == environment)
                        .OrderBy(x => Guid.NewGuid())
                        .FirstOrDefault()
-                   ?? (throwError ? throw new ServiceUnavailableException("Service not found") : (NodeInfo)null);
+                   ?? (throwError 
+                       ? throw new ServiceUnavailableException($"Service not found: {node} on {environment}") 
+                       : (NodeInfo)null);
         }
 
         internal IEnumerable<NodeInfo> LocateAll(string node, string environment)
