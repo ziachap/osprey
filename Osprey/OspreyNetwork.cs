@@ -167,7 +167,7 @@ namespace Osprey
                         }).ToList()
                     };
 
-                    OspreyLog.Debug($"Using override for '{node}'.");
+                    OspreyLog.Trace($"Using override for '{node}' => {nodeInfo.Ip}.");
 
                     return true;
                 }
