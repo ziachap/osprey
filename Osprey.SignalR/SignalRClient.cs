@@ -85,6 +85,7 @@ namespace Osprey.SignalR
             {
                 try
                 {
+                    // Dispose any existing connection
                     if (_connection != null)
                     {
                         await _connection.DisposeAsync();
@@ -98,10 +99,12 @@ namespace Osprey.SignalR
 
                     var builder = new HubConnectionBuilder().WithUrl("http://" + url + _hubEndpointUrl);
 
+                    // Apply user-defined build actions
                     _builder(builder);
 
                     _connection = builder.Build();
 
+                    // Apply things like handlers to the underlying connection
                     foreach (var rebuildAction in _rebuildActions)
                     {
                         rebuildAction?.Invoke(_connection);
@@ -117,7 +120,8 @@ namespace Osprey.SignalR
                     await _connection.StartAsync();
 
                     connected = true;
-                    Connected?.Invoke("Connected to hub.");
+
+                    if (Connected != null) await Connected.Invoke("Connected to hub.");
                 }
                 catch (ServiceUnavailableException ex)
                 {
@@ -135,6 +139,7 @@ namespace Osprey.SignalR
         public void On<T>(string method, Action<T> handler)
         {
             _connection?.On(method, handler);
+
             _rebuildActions.Add(connection => connection.On(method, handler));
         }
 
