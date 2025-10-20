@@ -11,11 +11,12 @@ using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.ServiceDiscovery
 {
-    public class Receiver
+    public class Receiver : IDisposable
     {
         private readonly IChannel _channel;
         private readonly ISerializer _serializer;
         private readonly ConcurrentDictionary<string, NodeInfoEntry> _discovered;
+        private bool _stopping = false;
 
         public IEnumerable<NodeInfo> Active => _discovered.Values
             .Where(x => x.Active)
@@ -38,37 +39,41 @@ namespace Osprey.ServiceDiscovery
             {
                 while (true)
                 {
-                    try
-                    {
-
-                        var message = _channel.Receive();
-
-                        _discovered.AddOrUpdate(message, msg =>
-                        {
-                            var nodeInfo = _serializer.Deserialize<NodeInfo>(message);
-                            var nodeInfoEntry = new NodeInfoEntry(nodeInfo, Config.Global.DiscoveryTimeout);
-                            OnDiscover?.Invoke(nodeInfo);
-                            return nodeInfoEntry;
-                        }, (msg, node) =>
-                        {
-                            node.Update();
-                            return node;
-                        });
-
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        OspreyLog.Warn("Channel has been disposed.");
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        OspreyLog.Warn("Failed to receive UDP multicast.");
-                        OspreyLog.Error(ex.ToString());
-                    }
-
+                    ScanForServices();
                 }
             }, TaskCreationOptions.LongRunning);
+        }
+
+        internal void ScanForServices()
+        {
+            try
+            {
+                var message = _channel.Receive();
+
+                _discovered.AddOrUpdate(message, msg =>
+                {
+                    var nodeInfo = _serializer.Deserialize<NodeInfo>(message);
+                    var nodeInfoEntry = new NodeInfoEntry(nodeInfo, Config.Global.DiscoveryTimeout);
+                    OnDiscover?.Invoke(nodeInfo);
+                    return nodeInfoEntry;
+                }, (msg, node) =>
+                {
+                    node.Update();
+                    return node;
+                });
+            }
+            catch (ObjectDisposedException)
+            {
+                if (_stopping) return;
+                OspreyLog.Warn("Channel has been disposed.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (_stopping) return;
+                OspreyLog.Warn("Failed to receive UDP multicast.");
+                OspreyLog.Error(ex.ToString());
+            }
         }
 
         internal NodeInfo Locate(string node, string environment, bool throwError = false)
@@ -110,6 +115,12 @@ namespace Osprey.ServiceDiscovery
             {
                 Discovered = DateTime.UtcNow;
             }
+        }
+
+        public void Dispose()
+        {
+            _stopping = true;
+            _channel?.Dispose();
         }
     }
 }

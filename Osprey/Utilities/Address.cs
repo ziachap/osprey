@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using Osprey.Communication;
 using Osprey.Configuration;
 using Osprey.Logging;
+using Osprey.Serialization;
+using Osprey.ServiceDiscovery;
 
 namespace Osprey.Utilities
 {
@@ -52,15 +56,73 @@ namespace Osprey.Utilities
         {
             var config = Config.Global;
             var addresses = GetLocalAddressesIPV4();
-
-            if (!string.IsNullOrEmpty(config.UdpBroadcastLocalFilter))
+            
+            var ipFilter = "";
+            
+            // 1) Try to get the system's environment variable filter
+            var globalIpFilter = Environment.GetEnvironmentVariable("OSPREY_LOCAL_IP_FILTER");
+            if (!string.IsNullOrEmpty(globalIpFilter))
+            {
+                OspreyLog.Debug($"Using environment variable local IP filter from OSPREY_LOCAL_IP_FILTER: {globalIpFilter}*");
+                ipFilter = globalIpFilter;
+            }
+            
+            // 2) Try to match based on the configured UdpBroadcastLocalFilter
+            else if (!string.IsNullOrEmpty(config.UdpBroadcastLocalFilter))
             {
                 OspreyLog.Debug($"Using preferred local IP filter: {config.UdpBroadcastLocalFilter}*");
+                ipFilter = config.UdpBroadcastLocalFilter;
             }
 
-            var ordered = addresses.OrderByDescending(ip => ip.ToString().StartsWith(config.UdpBroadcastLocalFilter ?? ""));
+            var ordered = addresses
+                .OrderByDescending(ip => ip.ToString().StartsWith(ipFilter))
+                .ToList();
+
+            // 3) Use an address that actually contain services if we don't match anything using the filter.
+            if (string.IsNullOrEmpty(ipFilter) || !ordered.Any(x => x.ToString().StartsWith(ipFilter)))
+            {
+                OspreyLog.Warn($"No services matching filter, scanning for networks with services..");
+                var activeAddress = ScanForServices(ordered);
+                if (activeAddress != null) return activeAddress;
+            }
 
             return ordered.First();
+        }
+
+        public static IPAddress? ScanForServices(IEnumerable<IPAddress> addresses)
+        {
+            var port = Config.Global.UdpBroadcastPort;
+            var remote = IPAddress.Parse(Config.Global.UdpBroadcastRemote);
+
+            foreach (var ipAddress in addresses)
+            {
+                OspreyLog.Debug($"Detecting services on {ipAddress}");
+
+                try
+                {
+                    using var broadcastChannel = new UdpChannel(remote, ipAddress, port);
+                    using var receiver = new Receiver(broadcastChannel, new JsonSerializer());
+
+                    receiver.Start();
+
+                    Thread.Sleep(Config.Global.BroadcastInterval + 200);
+
+                    if (receiver.Active.Any())
+                    {
+                        OspreyLog.Debug($"SUCCESS: Found {receiver.Active.Count()} services on {ipAddress}!");
+                        return ipAddress;
+                    }
+
+                    OspreyLog.Debug($"No services found on {ipAddress}");
+                }
+                catch (Exception ex)
+                {
+                    OspreyLog.Error($"Error scanning for services on {ipAddress}: {ex.Message}");
+                }
+            }
+
+            OspreyLog.Warn($"Failed to locate any services on any networks.");
+            return null;
         }
 
         public static IPAddress GetLocalIpAddress()

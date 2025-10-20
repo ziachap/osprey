@@ -46,7 +46,7 @@ namespace Osprey.Builder
         public IOsprey Build()
         {
             // Force the configuration to initialize
-            var _ = Config.Global;
+            _ = Config.Global;
 
             var osprey = new OspreyNetwork(_nodeName, _environment);
             
