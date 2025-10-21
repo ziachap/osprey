@@ -51,7 +51,16 @@ namespace Osprey
             else
             {
                 var remote = IPAddress.Parse(Config.Global.UdpBroadcastRemote);
-                _broadcastChannel = new UdpChannel(remote, local, port);
+
+                // Wrap UDP channel with resilient channel for automatic reconnection
+                _broadcastChannel = new ResilientChannel(
+                    () => new UdpChannel(remote, local, port),
+                    new ResilientChannelConfig
+                    {
+                        InitialBackoffDelay = TimeSpan.FromSeconds(1),
+                        MaxBackoffDelay = TimeSpan.FromSeconds(10),
+                        BackoffMultiplier = 2.0
+                    });
             }
         }
 

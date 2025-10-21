@@ -64,13 +64,18 @@ namespace Osprey.ServiceDiscovery
             }
             catch (ObjectDisposedException)
             {
+                // Channel has been disposed, likely during shutdown
                 if (_stopping) return;
-                OspreyLog.Warn("Channel has been disposed.");
+
+                // If not stopping, this is unexpected - log and rethrow to terminate receiver thread
+                OspreyLog.Warn("Channel has been disposed unexpectedly.");
                 throw;
             }
             catch (Exception ex)
             {
+                // Transient errors - log but continue (ResilientChannel will handle reconnection)
                 if (_stopping) return;
+
                 OspreyLog.Warn("Failed to receive UDP multicast.");
                 OspreyLog.Error(ex.ToString());
             }
