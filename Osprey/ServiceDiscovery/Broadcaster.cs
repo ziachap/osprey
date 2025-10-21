@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Osprey.Communication;
 using Osprey.Configuration;
+using Osprey.Logging;
 using Osprey.ServiceDiscovery.Data;
 
 namespace Osprey.ServiceDiscovery
@@ -32,8 +33,18 @@ namespace Osprey.ServiceDiscovery
 
         public void Send(NodeInfo node)
 		{
-			var serialized = _osprey.Serializer.Serialize(node);
-            _channel.Send(serialized);
+			try
+			{
+				var serialized = _osprey.Serializer.Serialize(node);
+				_channel.Send(serialized);
+			}
+			catch (Exception ex)
+			{
+				// Unexpected error during broadcast
+				OspreyLog.Warn("Failed to broadcast service discovery message.");
+				OspreyLog.Error(ex.ToString());
+				// Continue trying on next broadcast interval
+			}
 		}
 	}
 }

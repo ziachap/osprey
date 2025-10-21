@@ -19,12 +19,13 @@ namespace Osprey.Tests
         }
 
         [Test]
-        public void OspreyNetwork_Uses_UdpChannel_When_DisableNetworking_Is_False()
+        public void OspreyNetwork_Uses_ResilientChannel_When_DisableNetworking_Is_False()
         {
             Config.Global.DisableUdpNetworking = false;
             using (var network = new OspreyNetwork("test", "test_env"))
             {
-                network._broadcastChannel.Should().BeOfType<UdpChannel>();
+                // UDP channel is now wrapped in a ResilientChannel for automatic reconnection
+                network._broadcastChannel.Should().BeOfType<ResilientChannel>();
             }
         }
     }
