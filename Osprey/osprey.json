@@ -3,7 +3,7 @@
   "UdpBroadcastRemote": "255.255.255.255",
   "UdpBroadcastRemotePort": 55555,
   "BroadcastInterval": 1000,
-  "DiscoveryTimeout": 3000,
+  "DiscoveryTimeout": 6000,
   "UseDnsAddress": true,
   "DisableUdpNetworking": false,
   "EnableServiceOverrides": false,

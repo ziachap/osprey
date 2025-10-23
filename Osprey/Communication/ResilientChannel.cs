@@ -64,30 +64,39 @@ namespace Osprey.Communication
         {
             while (!_disposed)
             {
+                if (_disposed) return;
+
+                IChannel currentChannel;
                 lock (_lock)
                 {
-                    if (_disposed) return;
+                    currentChannel = _channel;
+                }
 
-                    try
+                try
+                {
+                    currentChannel.Send(message);
+                    return; // Success
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (_disposed) return;
+                    OspreyLog.Warn("Channel disposed during send, attempting reconnection.");
+                    lock (_lock)
                     {
-                        _channel.Send(message);
-                        return; // Success
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        if (_disposed) return;
-                        OspreyLog.Warn("Channel disposed during send, attempting reconnection.");
                         TryReconnect(); // Will retry forever until success or disposal
-                        // If we get here, either reconnected successfully or disposed
-                        if (_disposed) return;
                     }
-                    catch (Exception ex)
+                    // If we get here, either reconnected successfully or disposed
+                    if (_disposed) return;
+                }
+                catch (Exception ex)
+                {
+                    OspreyLog.Warn($"Failed to send message: {ex.Message}");
+                    lock (_lock)
                     {
-                        OspreyLog.Warn($"Failed to send message: {ex.Message}");
                         TryReconnect(); // Will retry forever until success or disposal
-                        // If we get here, either reconnected successfully or disposed
-                        if (_disposed) return;
                     }
+                    // If we get here, either reconnected successfully or disposed
+                    if (_disposed) return;
                 }
             }
         }
@@ -99,40 +108,68 @@ namespace Osprey.Communication
         {
             while (!_disposed)
             {
+                if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
+
+                IChannel currentChannel;
                 lock (_lock)
                 {
+                    currentChannel = _channel;
+                }
+
+                try
+                {
+                    var message = currentChannel.Receive();
+
+                    // Reset reconnection state on successful receive
+                    if (_reconnectionAttempts > 0)
+                    {
+                        OspreyLog.Info("Channel fully recovered after reconnection.");
+                        _reconnectionAttempts = 0;
+                        _currentBackoffDelay = _config.InitialBackoffDelay;
+                    }
+
+                    return message;
+                }
+                catch (ObjectDisposedException)
+                {
+                    if (_disposed) throw;
+                    OspreyLog.Warn("Channel disposed during receive, attempting reconnection.");
+                    lock (_lock)
+                    {
+                        TryReconnect(); // Will retry forever until success or disposal
+                    }
+                    // If we get here, either reconnected successfully or disposed
                     if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
+                }
+                catch (System.Net.Sockets.SocketException ex)
+                {
+                    if (_disposed) throw;
 
-                    try
+                    // SocketException 10060 is a timeout - this is normal for UDP when no data is available
+                    // Don't reconnect, just retry the receive
+                    if (ex.ErrorCode == 10060) // WSAETIMEDOUT
                     {
-                        var message = _channel.Receive();
-
-                        // Reset reconnection state on successful receive
-                        if (_reconnectionAttempts > 0)
-                        {
-                            OspreyLog.Info("Channel fully recovered after reconnection.");
-                            _reconnectionAttempts = 0;
-                            _currentBackoffDelay = _config.InitialBackoffDelay;
-                        }
-
-                        return message;
+                        continue; // Just retry, don't reconnect
                     }
-                    catch (ObjectDisposedException)
+
+                    OspreyLog.Debug($"Failed to receive message: {ex.Message}");
+                    lock (_lock)
                     {
-                        if (_disposed) throw;
-                        OspreyLog.Warn("Channel disposed during receive, attempting reconnection.");
                         TryReconnect(); // Will retry forever until success or disposal
-                        // If we get here, either reconnected successfully or disposed
-                        if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
                     }
-                    catch (Exception ex)
+                    // If we get here, either reconnected successfully or disposed
+                    if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
+                }
+                catch (Exception ex)
+                {
+                    if (_disposed) throw;
+                    OspreyLog.Debug($"Failed to receive message: {ex.Message}");
+                    lock (_lock)
                     {
-                        if (_disposed) throw;
-                        OspreyLog.Debug($"Failed to receive message: {ex.Message}");
                         TryReconnect(); // Will retry forever until success or disposal
-                        // If we get here, either reconnected successfully or disposed
-                        if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
                     }
+                    // If we get here, either reconnected successfully or disposed
+                    if (_disposed) throw new ObjectDisposedException(nameof(ResilientChannel));
                 }
             }
 
