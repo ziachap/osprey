@@ -58,7 +58,7 @@ namespace Osprey
                     new ResilientChannelConfig
                     {
                         InitialBackoffDelay = TimeSpan.FromSeconds(1),
-                        MaxBackoffDelay = TimeSpan.FromSeconds(10),
+                        MaxBackoffDelay = TimeSpan.FromSeconds(6),
                         BackoffMultiplier = 2.0
                     });
             }
