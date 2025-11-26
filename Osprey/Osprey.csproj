@@ -2,14 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <PackageId>Osprey</PackageId>
-    <Company>Sequoia Capital LLP</Company>
+    <PackageId>TTGO-Osprey</PackageId>
+    <Company>TTG Options LLP</Company>
     <Authors>Zia Siddique</Authors>
     <Product>Osprey</Product>
     <Description>A library for decentralized communication and service discovery.</Description>
     <Tags>osprey network decentralized service mesh</Tags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
+    <RepositoryUrl>https://github.com/TTG-Capital/ttgo-osprey</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

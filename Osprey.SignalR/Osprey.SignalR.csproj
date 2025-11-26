@@ -2,12 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <PackageId>Osprey.SignalR</PackageId>
+    <PackageId>TTGO-Osprey.SignalR</PackageId>
     <Description>SignalR client for use in Osprey networks.</Description>
     <Authors>Zia Siddique</Authors>
-    <Company>Sequoia Capital LLP</Company>
+    <Company>TTG Options LLP</Company>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DebugSymbols>true</DebugSymbols>
+    <RepositoryUrl>https://github.com/TTG-Capital/ttgo-osprey</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
